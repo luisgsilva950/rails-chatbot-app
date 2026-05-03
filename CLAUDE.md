@@ -320,6 +320,72 @@ end
 - Use JSONB for flexible payloads (e.g. `Message#metadata` for token
   usage or tool calls if/when they appear).
 
+### Enums
+
+Enums must be **explicit, readable strings — never integers**. Reading a
+row in `psql` should tell you what the value means without consulting Ruby.
+
+- The DB column is `string`, `null: false`, with a `CHECK` constraint or
+  Postgres native `ENUM` type listing every allowed value.
+- The Rails enum maps each symbol to its **string** backing.
+- Constants list the values in one place; the enum and the validation read
+  from that constant.
+- Add an index on the column when it's used in `WHERE`/`ORDER BY`.
+
+```ruby
+# Migration
+class CreateMessages < ActiveRecord::Migration[8.1]
+  def change
+    create_table :messages do |t|
+      t.references :conversation, null: false, foreign_key: true
+      t.string  :role,    null: false
+      t.string  :status,  null: false, default: "pending"
+      t.text    :content, null: false
+      t.timestamps
+    end
+
+    add_check_constraint :messages,
+      "role IN ('user','assistant','system')",
+      name: "messages_role_check"
+
+    add_check_constraint :messages,
+      "status IN ('pending','streaming','completed','failed')",
+      name: "messages_status_check"
+
+    add_index :messages, :status
+  end
+end
+```
+
+```ruby
+# Model
+class Message < ApplicationRecord
+  ROLES    = %w[user assistant system].freeze
+  STATUSES = %w[pending streaming completed failed].freeze
+
+  enum :role,   ROLES.index_with(&:itself)
+  enum :status, STATUSES.index_with(&:itself), default: "pending"
+
+  validates :role,   presence: true, inclusion: { in: ROLES }
+  validates :status, presence: true, inclusion: { in: STATUSES }
+end
+```
+
+`ROLES.index_with(&:itself)` produces `{ "user" => "user", ... }`, which
+makes Rails store the literal string. Never write `enum :role, %i[user
+assistant system]` — that maps to integers (`0`, `1`, `2`) and ruins
+auditability.
+
+For sets that change rarely and need DB-level enforcement, prefer a
+**Postgres native `ENUM` type** over a `CHECK` constraint:
+
+```ruby
+def up
+  create_enum :message_role, %w[user assistant system]
+  add_column :messages, :role, :message_role, null: false
+end
+```
+
 ### Multi-database (gotcha)
 
 The Solid stack runs on **separate Postgres databases per role**
@@ -402,6 +468,7 @@ missing, that's the fix.
 | Logging full prompts/responses            | Privacy + cost noise. Log IDs and metadata only.                    |
 | API keys in source                        | Credentials or ENV — always.                                        |
 | Adding gems "we might need"               | Wait until the second consumer appears.                             |
+| Integer-backed enums in the DB            | Always store the literal string. See the Enums section.             |
 
 ---
 
