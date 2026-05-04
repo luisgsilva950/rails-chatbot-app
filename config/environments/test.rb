@@ -6,6 +6,10 @@
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  # Allow rspec/rack-test default host so request specs don't trip the host
+  # authorization middleware.
+  config.host_authorization = { exclude: ->(_request) { true } }
+
   # While tests run files are not watched, reloading is not necessary.
   config.enable_reloading = false
 

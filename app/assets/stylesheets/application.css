@@ -1,10 +1,338 @@
 /*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
+ * Application stylesheet — small and boring (per CLAUDE.md).
+ * Plain CSS only. Compiled by Propshaft.
  */
+
+:root {
+  --bg:           #f0f2f5;
+  --surface:      #ffffff;
+  --fg:           #111b21;
+  --muted:        #667781;
+  --border:       #e9edef;
+  --primary:      #1f6feb;
+  --primary-hov:  #1858c4;
+  --primary-fg:   #ffffff;
+  --user-bg:      #d9fdd3;
+  --user-fg:      #111b21;
+  --assistant-bg: #ffffff;
+  --error:        #c52f24;
+  --maxw:         760px;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  background: var(--bg);
+  color: var(--fg);
+  overscroll-behavior: none;
+}
+
+/* When a full-height chat is on the page, lock the body so the only
+   scroll is inside .chat-log. */
+html:has(.chat), body:has(.chat) { overflow: hidden; }
+
+/* ─── Buttons ─────────────────────────────────────────────────────── */
+
+.btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 120ms ease, opacity 120ms ease;
+}
+
+.btn-primary { background: var(--primary); color: var(--primary-fg); }
+.btn-primary:hover:not(:disabled) { background: var(--primary-hov); }
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ─── Index page ──────────────────────────────────────────────────── */
+
+.chat-list-page {
+  max-width: var(--maxw);
+  margin: 0 auto;
+}
+
+.chat-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 1rem 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.chat-list li + li { border-top: 1px solid var(--border); }
+
+.chat-list__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: var(--fg);
+}
+
+.chat-list__item:hover { background: var(--bg); }
+
+.chat-list__id { font-weight: 600; font-variant-numeric: tabular-nums; }
+.chat-list__time { color: var(--muted); font-size: 0.8rem; }
+
+/* ─── Chat layout ─────────────────────────────────────────────────── */
+
+.chat {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.chat-header h1 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+}
+
+.chat-list-page .chat-header { justify-content: space-between; max-width: var(--maxw); margin: 0 auto; }
+
+.chat-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 1.125rem;
+  color: var(--fg);
+}
+
+.chat-back:hover { background: var(--bg); }
+
+.chat-empty {
+  margin: auto;
+  padding: 1rem;
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+/* ─── Message log ─────────────────────────────────────────────────── */
+
+.chat-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 1rem 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  scroll-behavior: smooth;
+}
+
+.message {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  max-width: 85%;
+  animation: message-in 140ms ease-out;
+}
+
+@keyframes message-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.message__avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.message__avatar svg { width: 16px; height: 16px; }
+
+.message--user .message__avatar { background: #5b6770; }
+
+.message__role {
+  /* Visually hidden — kept for screen readers. */
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
+}
+
+.message__bubble {
+  padding: 0.4rem 0.625rem;
+  border-radius: 10px;
+  background: var(--assistant-bg);
+  border: 1px solid var(--border);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.message--user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message--user .message__bubble {
+  background: var(--user-bg);
+  color: var(--user-fg);
+  border-color: transparent;
+}
+
+.message--assistant,
+.message--system {
+  align-self: flex-start;
+}
+
+/* Markdown-rendered content */
+.message__bubble[data-markdown] { white-space: normal; }
+.message__bubble > :first-child { margin-top: 0; }
+.message__bubble > :last-child { margin-bottom: 0; }
+.message__bubble p { margin: 0 0 0.4rem; }
+.message__bubble p:last-child { margin-bottom: 0; }
+.message__bubble ul,
+.message__bubble ol { margin: 0 0 0.4rem; padding-left: 1.25rem; }
+.message__bubble li { margin: 0.1rem 0; }
+.message__bubble strong { font-weight: 600; }
+.message__bubble em { font-style: italic; }
+.message__bubble code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 0.05rem 0.25rem;
+  border-radius: 4px;
+}
+.message__bubble pre {
+  margin: 0.25rem 0 0.4rem;
+  padding: 0.5rem 0.625rem;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.message__bubble pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.8125rem;
+}
+.message__bubble a { color: inherit; text-decoration: underline; }
+.message__bubble h1,
+.message__bubble h2,
+.message__bubble h3,
+.message__bubble h4 {
+  font-size: 1rem;
+  margin: 0.25rem 0 0.4rem;
+  font-weight: 600;
+}
+.message__bubble blockquote {
+  margin: 0 0 0.4rem;
+  padding-left: 0.625rem;
+  border-left: 3px solid rgba(0, 0, 0, 0.15);
+  color: inherit;
+  opacity: 0.85;
+}
+
+/* Typing indicator */
+.message--typing .message__bubble { padding: 0.5rem 0.75rem; }
+
+.typing {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+  height: 0.875rem;
+}
+
+.typing span {
+  width: 5px; height: 5px;
+  background: var(--muted);
+  border-radius: 50%;
+  animation: typing-bounce 1s infinite ease-in-out;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.15s; }
+.typing span:nth-child(3) { animation-delay: 0.30s; }
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0);   opacity: 0.4; }
+  30%           { transform: translateY(-3px); opacity: 1;   }
+}
+
+.chat-error {
+  align-self: center;
+  color: var(--error);
+  font-size: 0.8rem;
+  margin: 0.25rem 0;
+}
+
+/* ─── Form ────────────────────────────────────────────────────────── */
+
+.chat-form {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.chat-input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.5rem 0.875rem;
+  font: inherit;
+  font-size: 0.875rem;
+  background: var(--bg);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.chat-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  background: var(--surface);
+}
+
+.chat-input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0);
+  white-space: nowrap; border: 0;
+}

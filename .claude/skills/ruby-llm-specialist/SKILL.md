@@ -308,6 +308,201 @@ refresh the `models` table.
 
 ---
 
+## Chat vs Agent — practical differences
+
+`RubyLLM::Agent` is **declarative sugar over `RubyLLM::Chat`**. There is
+no capability gap. Internally, calling `agent.ask(...)` builds a fresh
+`Chat` from the agent's class-level config (`model`, `instructions`,
+`tools`) and runs `complete`. Tool loop, streaming, schemas — all
+identical.
+
+What actually differs in practice:
+
+| Aspect              | `Chat` (with `acts_as_chat`)        | `Agent` (in-memory)            |
+| ------------------- | ----------------------------------- | ------------------------------ |
+| Persistence         | AR — survives across requests       | Lives only inside one call     |
+| History             | Accumulates the whole conversation  | Starts from zero on every ask  |
+| Tool loop           | Identical                           | Identical                      |
+| Streaming           | Same `complete(&block)` API         | Same                           |
+| Reuse between calls | The whole point                     | Stateless by design            |
+| Audit trail         | Full (messages + tool_calls in DB)  | None unless you log explicitly |
+
+**Rule of thumb:**
+- The **main user-facing chat** is always a persisted `Chat` with
+  `acts_as_chat`. Only one of these per conversation.
+- **Sub-domains** (weather, help center, etc.) become an **`Agent`
+  invoked from a tool** when their reasoning is non-trivial; otherwise
+  they stay as plain tools.
+
+### "Why not just use a thin Chat with everything as agent-as-tool?"
+
+Tempting, and it works, but the trade-offs are real:
+
+**Pros:** encapsulation per domain, smaller main system prompt (saves
+tokens on every turn), domain-specific model choice, easier domain
+testing.
+
+**Cons:** every agent-as-tool call adds **2 extra LLM turns** (wrapper
+in, wrapper out) — that is real latency and real money. Sub-agents
+also lose the user's full context: they only see whatever the main
+chat decides to pass as arguments. Debugging is harder because the
+sub-agent's internal turns aren't in the persisted `Chat`.
+
+**Use agent-as-tool when:**
+- The domain coordinates **multiple of its own tools** in sequence
+  (e.g. `WeatherAgent` decides historical vs forecast and wraps the
+  forecast tool with date interpretation rules).
+- The domain has **strong reasoning rules** that don't fit cleanly in
+  the main system prompt.
+- You want to **isolate the context** for compliance / multi-tenant
+  reasons.
+
+**Use a plain tool (no agent) when:**
+- It's a **single, well-defined operation** (lookup, sum, search).
+- The user's question is already a usable input.
+- No multi-step reasoning between calls.
+
+In this repo, `Weather::AskAgentTool` → agent-as-tool is justified.
+`Scheduling::*`, `Inventory::*`, `CashFlow::*`, `CustomerLookup::*`
+are plain tools and should stay that way.
+
+---
+
+## System instructions — rules that stuck
+
+The `Llm::Client::SYSTEM_INSTRUCTIONS` is the single source of truth
+for the main chat's behavior. Reviewing or editing it, enforce:
+
+- **Forbid "I'll check / I'm looking up" without a tool call.** Gemini
+  2.5 Flash in particular sometimes ends a turn announcing a tool
+  without actually emitting `function_call`. The system prompt must
+  explicitly ban that pattern.
+- **Tool descriptions cost tokens on every turn.** They're sent with
+  every request as part of the tool schema. Keep them tight — one
+  short sentence per tool. No examples in the description; put
+  examples in the agent's `instructions` if needed.
+- **Dynamic context belongs in instructions, not in mock data.** A
+  weather/scheduling agent gets `today: Date.current.iso8601`
+  injected into its instructions template. Do **not** dump the data
+  range of the underlying source ("we have data from X to Y") —
+  let the tool surface that when called.
+- **Cross-domain coordination is the main chat's job.** When two
+  domains need to be combined ("compare weather vs sales"), the main
+  chat orchestrates by calling each tool/agent with the right
+  arguments. Sub-agents don't reach across domains.
+
+---
+
+## Empty assistant messages
+
+A turn that consists only of `tool_calls` produces a `Message` with
+`role: "assistant"` and **empty `content`**. This is correct and must
+be preserved in the DB — `ruby_llm` reconstructs the chat history from
+those rows on every subsequent `complete`, and it needs the tool_call
+record to know what was already requested.
+
+Do **not** delete or skip these messages. Filter them at the **view
+layer** instead:
+
+```erb
+<%= render @chat.messages.where.not(content: [ nil, "" ]) %>
+```
+
+The `validates :content, presence: true` golden rule already prevents
+the simpler footgun (validation failing the empty-content row). This
+is the rendering complement.
+
+---
+
+## Tool-call typing indicator
+
+`acts_as_chat` exposes lifecycle callbacks on the chat instance:
+`on_new_message`, `on_end_message`, `on_tool_call`, `on_tool_result`.
+
+For the "Pensando..." UX during tool execution, `Chat::Replier`
+accepts an `on_tool_call:` keyword and registers it via
+`chat.on_tool_call(&on_tool_call)`. The job broadcasts
+`{ tool: tool_call.name }` over ActionCable and the Stimulus
+controller closes any pending bubble and re-shows the typing
+indicator.
+
+Do **not** poll the DB for tool-call state. The callback is
+authoritative and runs in the same job/process as the streaming
+loop.
+
+---
+
+## Embeddings & RAG
+
+`RubyLLM.embed(text, model:, dimensions:)` returns an `Embedding`
+with `vectors`, `model`, `input_tokens`. Multi-text input (Array) is
+batched in a single request — always batch when you can.
+
+### Stack for this repo (when we add it)
+
+- **Postgres + pgvector** — same primary DB, no extra service. The
+  base image must be `pgvector/pgvector:pg16` (or the extension
+  installed manually); `postgres:16` does **not** ship pgvector.
+- **`neighbor` gem** — provides `has_neighbors :embedding` and
+  `nearest_neighbors(:embedding, vec, distance: :cosine)`. Without it
+  you fight pgvector's string casts.
+- **Embedding model independent from chat model.** Mix freely.
+  `text-embedding-3-small` (OpenAI, 1536d, cheap) or
+  `text-embedding-004` (Gemini) are sane defaults. Pin via
+  `config.default_embedding_model`.
+
+### Indexing rules
+
+- **Embed `title + "\n\n" + body`**, not body alone — titles carry
+  strong semantic keywords.
+- **Embed the user query raw**, no "represent this for retrieval"
+  prefix. Modern models don't need it.
+- Generate the embedding `before_save :generate_embedding,
+  if: :will_save_change_to_body?`. Only move to a job if it becomes a
+  write-path bottleneck (rare for a small catalog).
+- Store the **embedding model name** alongside the vector so a
+  provider/model swap can be detected — vector spaces are not
+  cross-compatible.
+- Index: `using: :hnsw, opclass: :vector_cosine_ops`. Don't bother
+  with `ivfflat` for this scale.
+- **Multi-DB: vectors live only in `primary`.** Never in cache, queue,
+  or cable schemas.
+
+### Retrieval rules
+
+- `nearest_neighbors` always returns top-N regardless of relevance.
+  **Apply a distance threshold** (cosine `< ~0.5–0.6`) before
+  returning to the LLM, otherwise it gets junk and synthesizes
+  nonsense.
+- Default `limit: 3`. More than that bloats the next LLM turn for no
+  retrieval gain.
+- Return `{ results: [{ title, slug, excerpt }] }` — never AR objects.
+
+### Architectural fit: tool, not agent
+
+For a help-center / FAQ over how-tos, the right shape is a **plain
+tool**: `HelpCenter::SearchHowTosTool`. Single operation
+(`embed → nearest_neighbors → top-K`), no multi-step reasoning. Don't
+wrap it in an agent unless you actually need query reformulation,
+category navigation, or cross-document synthesis as a separate
+reasoning loop.
+
+When the tool is added, also append a short note to
+`Llm::Client::SYSTEM_INSTRUCTIONS` instructing the model to use it
+for "como faço X / onde altero Y" questions — without the nudge,
+models often answer from generic knowledge and skip the help center.
+
+### Hybrid search & chunking — defer
+
+- **Chunking**: only when documents exceed ~1k tokens or retrieval
+  starts missing within-document specifics. Start whole-document.
+- **Hybrid (embeddings + tsvector)**: only when embedding-only
+  retrieval misses on exact technical terms (codes, menu names).
+  Reciprocal Rank Fusion is the standard combiner. YAGNI until
+  failure cases show up.
+
+---
+
 ## Authoritative references
 
 - Chat & ask: <https://rubyllm.com/chat/>

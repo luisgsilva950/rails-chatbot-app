@@ -1,0 +1,5 @@
+<article class="message message--assistant">
+  <%= render partial: "messages/avatar", locals: { role: "assistant" } %>
+  <header class="message__role"><%= t("messages.role.assistant") %></header>
+  <div class="message__bubble" data-markdown="true" data-raw="<%= assistant.content %>"><%= simple_format(assistant.content) %></div>
+</article>

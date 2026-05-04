@@ -55,6 +55,10 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  # RSpec is the only test framework on this project (CLAUDE.md).
+  gem "rspec-rails"
+  gem "factory_bot_rails"
 end
 
 group :development do
@@ -62,6 +66,11 @@ group :development do
   gem "web-console"
 end
 
+
+  # Coverage + HTTP boundary recording for LLM specs.
+  gem "simplecov", require: false
+  gem "vcr",       require: false
+  gem "webmock",   require: false
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara"

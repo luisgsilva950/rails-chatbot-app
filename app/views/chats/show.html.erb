@@ -1,0 +1,70 @@
+<% content_for :title, t("chats.title") %>
+
+<section class="chat"
+         data-controller="chat"
+         data-chat-id-value="<%= @chat.id %>"
+         data-chat-url-value="<%= chat_messages_path(@chat) %>">
+  <header class="chat-header">
+    <%= link_to "←", chats_path, class: "chat-back", "aria-label": t("chats.title") %>
+    <h1><%= t("chats.title") %></h1>
+  </header>
+
+  <div class="chat-log"
+       role="log"
+       aria-live="polite"
+       data-chat-target="messages">
+    <% visible_messages = @chat.messages.where(role: %w[user assistant]).where.not(content: [ nil, "" ]).order(:created_at) %>
+    <% if visible_messages.any? %>
+      <%= render visible_messages %>
+    <% else %>
+      <p class="chat-empty"><%= t("chats.empty_messages") %></p>
+    <% end %>
+  </div>
+
+  <template data-chat-target="userTemplate">
+    <article class="message message--user">
+      <span class="message__avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5zm0 2c-3.866 0-9 1.943-9 5.5V21h18v-1.5C21 15.943 15.866 14 12 14z"/></svg>
+      </span>
+      <header class="message__role"><%= t("messages.role.user") %></header>
+      <div class="message__bubble"></div>
+    </article>
+  </template>
+
+  <template data-chat-target="assistantTemplate">
+    <article class="message message--assistant">
+      <span class="message__avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2v1h3a3 3 0 0 1 3 3v3a1 1 0 0 1-1 1h-1v3a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4v-3H5a1 1 0 0 1-1-1V8a3 3 0 0 1 3-3h3V4a2 2 0 0 1 2-2zm-3 9a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>
+      </span>
+      <header class="message__role"><%= t("messages.role.assistant") %></header>
+      <div class="message__bubble"></div>
+    </article>
+  </template>
+
+  <template data-chat-target="typingTemplate">
+    <article class="message message--assistant message--typing" aria-label="<%= t("chats.typing") %>">
+      <span class="message__avatar" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a2 2 0 0 1 2 2v1h3a3 3 0 0 1 3 3v3a1 1 0 0 1-1 1h-1v3a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4v-3H5a1 1 0 0 1-1-1V8a3 3 0 0 1 3-3h3V4a2 2 0 0 1 2-2zm-3 9a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm6 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>
+      </span>
+      <div class="message__bubble"><span class="typing"><span></span><span></span><span></span></span></div>
+    </article>
+  </template>
+
+  <form class="chat-form"
+        data-chat-target="form"
+        data-action="submit->chat#submit">
+    <input type="hidden" name="authenticity_token" value="<%= form_authenticity_token %>">
+    <label for="message_content" class="visually-hidden"><%= t("chats.placeholder") %></label>
+    <input type="text"
+           id="message_content"
+           name="message[content]"
+           placeholder="<%= t("chats.placeholder") %>"
+           autocomplete="off"
+           required
+           data-chat-target="input"
+           class="chat-input">
+    <button type="submit" class="btn btn-primary" data-chat-target="submitButton">
+      <%= t("chats.send") %>
+    </button>
+  </form>
+</section>

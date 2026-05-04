@@ -1,0 +1,23 @@
+class Inventory::ProductLookupTool < RubyLLM::Tool
+  description "Busca produtos do estoque por nome ou SKU. Faz busca parcial e case-insensitive."
+
+  params do
+    string :query, description: "Termo de busca: parte do nome ou SKU do produto."
+  end
+
+  def execute(query:)
+    term = query.to_s.strip
+    return { error: "Informe um termo de busca." } if term.empty?
+
+    Product.where("name ILIKE :q OR sku ILIKE :q", q: "%#{term}%").limit(20).map do |product|
+      {
+        sku:            product.sku,
+        name:           product.name,
+        category:       product.category,
+        unit:           product.unit,
+        stock_quantity: product.stock_quantity,
+        price_brl:      product.price_cents / 100.0
+      }
+    end
+  end
+end

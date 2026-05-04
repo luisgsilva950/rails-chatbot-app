@@ -1,0 +1,5 @@
+<article class="message message--user">
+  <%= render partial: "messages/avatar", locals: { role: "user" } %>
+  <header class="message__role"><%= t("messages.role.user") %></header>
+  <div class="message__bubble" data-markdown="true" data-raw="<%= user.content %>"><%= simple_format(user.content) %></div>
+</article>

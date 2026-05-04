@@ -6,6 +6,14 @@ require "rails/all"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+# ruby_llm: enable the new association-based acts_as API.
+# MUST be set here (before Rails::Application is defined) so the model
+# mixins see the flag when they are loaded. Setting it in an initializer
+# is too late.
+RubyLLM.configure do |config|
+  config.use_new_acts_as = true
+end
+
 module RailsChatbotApp
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -15,6 +23,10 @@ module RailsChatbotApp
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
+
+    # i18n: pt-BR for all user-facing strings.
+    config.i18n.default_locale = :"pt-BR"
+    config.i18n.available_locales = [ :"pt-BR" ]
 
     # Configuration for the application, engines, and railties goes here.
     #

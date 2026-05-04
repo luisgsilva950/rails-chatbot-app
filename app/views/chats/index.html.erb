@@ -1,0 +1,25 @@
+<% content_for :title, t("chats.title") %>
+
+<div class="chat-list-page">
+  <header class="chat-header">
+    <h1><%= t("chats.title") %></h1>
+    <%= button_to t("chats.new_chat"), chats_path, method: :post, class: "btn btn-primary" %>
+  </header>
+
+  <% if @chats.any? %>
+    <ul class="chat-list">
+      <% @chats.each do |chat| %>
+        <li>
+          <%= link_to chat_path(chat), class: "chat-list__item" do %>
+            <span class="chat-list__id">#<%= chat.id %></span>
+            <span class="chat-list__time">
+              <%= t("chats.started_at", at: l(chat.created_at, format: :short)) %>
+            </span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="chat-empty"><%= t("chats.empty_list") %></p>
+  <% end %>
+</div>
