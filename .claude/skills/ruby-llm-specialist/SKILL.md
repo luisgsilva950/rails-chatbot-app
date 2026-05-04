@@ -53,10 +53,14 @@ agentic-workflows, configuration, models, error-handling, rails).
    `RubyLLM.transcribe` calls live inside a Solid Queue job.
    Controllers/channels never call the LLM directly.
 
-2. **Single client wrapper.** Every LLM call goes through the project's
-   `Llm::Client` (or an `Agent` subclass). Never use
-   `RubyLLM.chat` ad-hoc inside business code; that bypasses our
-   error handling, model defaults, and audit logs.
+2. **Single entry point per surface.** The main chat goes through
+   `Chat::Replier`, which configures the persisted `Chat`
+   (`with_model`, `with_instructions`, `with_tools`) and calls
+   `complete`. Sub-domains go through an `Agent` subclass. Never call
+   `RubyLLM.chat` ad-hoc inside business code, and **do not introduce a
+   separate `Llm::Client` layer** — `acts_as_chat` is already the
+   ruby_llm boundary; an extra wrapper that only forwards configuration
+   is dead weight.
 
 3. **`use_new_acts_as = true` lives in `config/application.rb`** before
    `class Application < Rails::Application`, *not* in an initializer.
@@ -89,24 +93,43 @@ agentic-workflows, configuration, models, error-handling, rails).
 
 ## Patterns we use (and their shapes)
 
-### `Llm::Client` (single wrapper)
-
-Lives in `app/services/llm/client.rb`. One public method `#chat` (or
-`#stream`). Owns: model selection, `RubyLLM.context` for multi-tenant
-isolation if/when needed, retry config, error translation. Tests pass
-a fake `RubyLLM::Chat`-shaped double in.
-
 ### `Chat::Replier` (PORO, called from a job)
+
+The main chat has no separate "client" layer — `acts_as_chat` is
+already the ruby_llm boundary. `Chat::Replier` owns the model choice,
+system instructions and default tool list directly, configures the
+persisted `Chat` via the builder methods, and runs `complete`.
 
 ```ruby
 class Chat::Replier
-  def initialize(llm: Llm::Client.new) = @llm = llm
+  SYSTEM_INSTRUCTIONS = "...".freeze
+  DEFAULT_TOOLS = [ ... ].freeze
 
-  def call(chat, &on_chunk)
-    chat.ask(chat.messages.where(role: "user").last.content, &on_chunk)
+  def initialize(tools: DEFAULT_TOOLS, model: RubyLLM.config.default_model)
+    @tools = tools
+    @model = model
+  end
+
+  def call(chat, on_tool_call: nil, &on_chunk)
+    return unless chat.messages.where(role: "user").exists?
+
+    chat.on_tool_call(&on_tool_call) if on_tool_call
+    chat
+      .with_model(@model)
+      .with_instructions(SYSTEM_INSTRUCTIONS)
+      .with_tools(*@tools)
+      .complete(&on_chunk)
   end
 end
 ```
+
+Why no `Llm::Client`? Because a wrapper that only forwards
+`with_model/with_instructions/with_tools/complete` to the chat is pure
+indirection — there is no HTTP client or SDK layer below it for the
+wrapper to abstract. `acts_as_chat` *is* that layer.
+
+For sub-domains with non-trivial reasoning (e.g. weather), use a
+`RubyLLM::Agent` subclass instead — see "Agent" below.
 
 ### `Chat::ReplyJob`
 
@@ -254,8 +277,10 @@ refresh the `models` table.
 
 - [ ] `config.use_new_acts_as = true` set in `config/application.rb`?
 - [ ] No `validates :content, presence: true` on `Message`?
-- [ ] All LLM calls happen inside a job, via `Llm::Client` or an
-      `Agent`?
+- [ ] All LLM calls happen inside a job, via `Chat::Replier` (main
+      chat) or an `Agent` (sub-domains)?
+- [ ] No new `Llm::Client`-style wrapper that just forwards to
+      `acts_as_chat`?
 - [ ] Channel/controller has zero LLM logic?
 - [ ] Streaming block guards against `chunk.content.blank?` before
       broadcasting?
@@ -370,7 +395,7 @@ are plain tools and should stay that way.
 
 ## System instructions — rules that stuck
 
-The `Llm::Client::SYSTEM_INSTRUCTIONS` is the single source of truth
+The `Chat::Replier::SYSTEM_INSTRUCTIONS` is the single source of truth
 for the main chat's behavior. Reviewing or editing it, enforce:
 
 - **Forbid "I'll check / I'm looking up" without a tool call.** Gemini
@@ -488,7 +513,7 @@ category navigation, or cross-document synthesis as a separate
 reasoning loop.
 
 When the tool is added, also append a short note to
-`Llm::Client::SYSTEM_INSTRUCTIONS` instructing the model to use it
+`Chat::Replier::SYSTEM_INSTRUCTIONS` instructing the model to use it
 for "como faço X / onde altero Y" questions — without the nudge,
 models often answer from generic knowledge and skip the help center.
 

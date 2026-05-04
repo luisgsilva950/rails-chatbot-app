@@ -139,12 +139,17 @@ them.
 
 ```ruby
 class Chat::Replier
-  def initialize(llm: Llm::Client.new)
-    @llm = llm
+  def initialize(tools: DEFAULT_TOOLS, model: RubyLLM.config.default_model)
+    @tools = tools
+    @model = model
   end
 
-  def call(conversation, &on_chunk)
-    @llm.stream(conversation.messages_for_llm, &on_chunk)
+  def call(chat, &on_chunk)
+    chat
+      .with_model(@model)
+      .with_instructions(SYSTEM_INSTRUCTIONS)
+      .with_tools(*@tools)
+      .complete(&on_chunk)
   end
 end
 ```
@@ -273,9 +278,10 @@ tool — stop. The product doesn't need it.
 
 ## LLM Conventions (`ruby_llm`)
 
-- **All LLM calls go through a single client wrapper** (e.g.
-  `Llm::Client`). It owns the `ruby_llm` configuration, model choice, and
-  error handling.
+- **The main chat goes through `Chat::Replier`**, which owns the model
+  choice, system instructions, and default tool list, and calls
+  `complete` on the persisted `Chat`. `acts_as_chat` is the ruby_llm
+  boundary — there is no separate `Llm::Client` wrapper.
 - **Always invoked from a job**, never inline in a request.
 - The job persists every assistant message (`role: "assistant"`, content,
   token usage if available).
@@ -527,7 +533,8 @@ bin/rails console
 - [ ] Controllers thin (≤ 5 lines per action, one ivar to the view)?
 - [ ] Business logic in POROs / jobs, not controllers or channels?
 - [ ] Validations on the model — not in POROs / controllers?
-- [ ] LLM called only from a job, through `Llm::Client`?
+- [ ] LLM called only from a job, through `Chat::Replier` (main chat)
+      or an `Agent` (sub-domain)?
 - [ ] Strings in `pt-BR.yml`, accessed via `t(...)`?
 - [ ] Request / channel specs cover happy path + failure?
 - [ ] **100% line + branch coverage on new/changed code** (`simplecov`)?

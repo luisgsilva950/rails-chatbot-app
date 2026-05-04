@@ -5,6 +5,7 @@ ENV["RAILS_ENV"] = "test"
 # in tests (boundaries are stubbed), but the gem requires a non-empty key
 # at AR creation time. WebMock blocks any actual outbound HTTP.
 ENV["OPENAI_API_KEY"] ||= "test-key"
+ENV["GEMINI_API_KEY"] ||= "test-key"
 
 require_relative "../config/environment"
 abort("The Rails environment is running in production mode!") if Rails.env.production?
