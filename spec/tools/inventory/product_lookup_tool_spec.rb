@@ -12,6 +12,6 @@ RSpec.describe Inventory::ProductLookupTool do
   end
 
   it "returns an error when query is blank" do
-    expect(tool.execute(query: "  ")).to eq(error: "Informe um termo de busca.")
+    expect(tool.execute(query: "  ")).to eq(error: "Provide a search term.")
   end
 end

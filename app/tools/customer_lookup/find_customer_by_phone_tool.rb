@@ -1,16 +1,16 @@
 class CustomerLookup::FindCustomerByPhoneTool < RubyLLM::Tool
-  description "Localiza um cliente pelo telefone e retorna seus veículos cadastrados."
+  description "Finds a customer by phone number and returns their registered vehicles."
 
   params do
-    string :phone, description: "Telefone do cliente. Aceita parcial: dígitos são extraídos antes da busca."
+    string :phone, description: "Customer phone. Partial input is accepted: digits are extracted before searching."
   end
 
   def execute(phone:)
     digits = phone.to_s.gsub(/\D/, "")
-    return { error: "Informe um telefone válido." } if digits.empty?
+    return { error: "Provide a valid phone number." } if digits.empty?
 
     customer = Customer.where("REGEXP_REPLACE(phone, '\\D', '', 'g') ILIKE ?", "%#{digits}%").first
-    return { error: "Cliente não encontrado para esse telefone." } unless customer
+    return { error: "No customer found for that phone number." } unless customer
 
     {
       id:       customer.id,

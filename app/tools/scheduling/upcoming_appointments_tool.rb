@@ -1,9 +1,9 @@
 class Scheduling::UpcomingAppointmentsTool < RubyLLM::Tool
-  description "Retorna os próximos agendamentos ainda em aberto, ordenados por data."
+  description "Returns the next open appointments, ordered by date."
 
   params do
     integer :limit, required: false,
-            description: "Quantos agendamentos retornar. Padrão: 10. Máximo: 50."
+            description: "How many appointments to return. Default: 10. Max: 50."
   end
 
   def execute(limit: 10)

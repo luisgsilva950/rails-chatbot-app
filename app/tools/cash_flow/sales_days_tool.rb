@@ -1,13 +1,13 @@
 class CashFlow::SalesDaysTool < RubyLLM::Tool
-  description "Lista os dias em que houve pagamentos confirmados, com total recebido em cada dia. Use quando o usuário perguntar quais dias tiveram vendas, faturamento, recebimentos ou movimento de caixa."
+  description "Lists days with confirmed payments and the total received per day. Use when the user asks which days had sales, revenue, receipts, or cash movement."
 
   params do
     string :start_date, required: false,
-           description: "Data inicial (AAAA-MM-DD). Padrão: 30 dias atrás."
+           description: "Start date (YYYY-MM-DD). Defaults to 30 days ago."
     string :end_date, required: false,
-           description: "Data final (AAAA-MM-DD), inclusiva. Padrão: hoje."
+           description: "End date (YYYY-MM-DD), inclusive. Defaults to today."
     integer :limit, required: false,
-            description: "Máximo de dias retornados. Padrão: 30. Limite: 365."
+            description: "Maximum number of days returned. Default: 30. Cap: 365."
   end
 
   def execute(start_date: nil, end_date: nil, limit: nil)
@@ -25,7 +25,7 @@ class CashFlow::SalesDaysTool < RubyLLM::Tool
       days:       rows.map { |date, cents, count| { date: date.iso8601, total_brl: cents / 100.0, count: count } }
     }
   rescue Date::Error
-    { error: "Data inválida. Use o formato AAAA-MM-DD." }
+    { error: "Invalid date. Use YYYY-MM-DD." }
   end
 
   private

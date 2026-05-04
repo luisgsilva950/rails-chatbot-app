@@ -16,7 +16,7 @@ RSpec.describe Weather::AskAgentTool do
   it "returns an error for blank questions without invoking the agent" do
     allow(WeatherAgent).to receive(:new)
 
-    expect(tool.execute(question: "")).to eq(error: "Pergunta vazia.")
+    expect(tool.execute(question: "")).to eq(error: "Empty question.")
     expect(WeatherAgent).not_to have_received(:new)
   end
 end

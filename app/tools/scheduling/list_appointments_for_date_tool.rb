@@ -1,11 +1,11 @@
 class Scheduling::ListAppointmentsForDateTool < RubyLLM::Tool
-  description "Lista os agendamentos da estética em uma data específica."
+  description "Lists detailing-shop appointments for a specific date."
 
   params do
-    string :date, description: "Data no formato AAAA-MM-DD. Padrão: hoje."
+    string :date, description: "Date in YYYY-MM-DD format. Defaults to today."
     string :status, required: false,
            enum: %w[scheduled in_progress completed canceled no_show],
-           description: "Filtra por status. Vazio retorna todos."
+           description: "Filter by status. Empty returns all."
   end
 
   def execute(date: nil, status: nil)
@@ -14,7 +14,7 @@ class Scheduling::ListAppointmentsForDateTool < RubyLLM::Tool
     scope  = scope.where(status: status) if status.present?
     scope.order(:scheduled_at).map { |appointment| serialize(appointment) }
   rescue Date::Error
-    { error: "Data inválida. Use o formato AAAA-MM-DD." }
+    { error: "Invalid date. Use YYYY-MM-DD." }
   end
 
   private

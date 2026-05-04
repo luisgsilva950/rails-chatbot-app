@@ -30,6 +30,6 @@ RSpec.describe CashFlow::DailyRevenueTool do
   end
 
   it "returns an error for invalid dates" do
-    expect(tool.execute(date: "bad")).to eq(error: "Data inválida. Use o formato AAAA-MM-DD.")
+    expect(tool.execute(date: "bad")).to eq(error: "Invalid date. Use YYYY-MM-DD.")
   end
 end

@@ -14,10 +14,10 @@ RSpec.describe CustomerLookup::FindCustomerByPhoneTool do
   end
 
   it "returns an error when no digits are provided" do
-    expect(tool.execute(phone: "abc")).to eq(error: "Informe um telefone válido.")
+    expect(tool.execute(phone: "abc")).to eq(error: "Provide a valid phone number.")
   end
 
   it "returns an error when no customer matches" do
-    expect(tool.execute(phone: "0000000")).to eq(error: "Cliente não encontrado para esse telefone.")
+    expect(tool.execute(phone: "0000000")).to eq(error: "No customer found for that phone number.")
   end
 end

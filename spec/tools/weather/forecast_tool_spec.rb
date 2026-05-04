@@ -20,6 +20,6 @@ RSpec.describe Weather::ForecastTool do
   end
 
   it "returns an error for invalid input" do
-    expect(tool.execute(start_date: "bad")).to eq(error: "Data inválida. Use o formato AAAA-MM-DD.")
+    expect(tool.execute(start_date: "bad")).to eq(error: "Invalid date. Use YYYY-MM-DD.")
   end
 end

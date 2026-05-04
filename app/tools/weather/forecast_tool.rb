@@ -1,12 +1,11 @@
-# Low-level weather lookup. Used by `WeatherAgent` to read the mock.
 class Weather::ForecastTool < RubyLLM::Tool
-  description "Consulta dados meteorológicos (mockados) para uma data ou intervalo, incluindo datas passadas, presentes e futuras. Retorna condição, temperatura e precipitação por dia. Use também para perguntas sobre clima histórico, ex.: 'como estava o tempo nos últimos 30 dias?'."
+  description "Looks up (mocked) weather data for a date or range, including past, present, and future dates. Returns condition, temperature, and precipitation per day. Also use for historical questions, e.g. 'how was the weather over the last 30 days?'."
 
   params do
     string :start_date, required: true,
-           description: "Data inicial no formato AAAA-MM-DD. Pode ser uma data passada."
+           description: "Start date in YYYY-MM-DD format. May be a past date."
     string :end_date, required: false,
-           description: "Data final no formato AAAA-MM-DD, inclusiva. Se omitida, usa start_date (consulta apenas um dia)."
+           description: "End date in YYYY-MM-DD format, inclusive. If omitted, uses start_date (single-day lookup)."
   end
 
   def execute(start_date:, end_date: nil)
@@ -18,6 +17,6 @@ class Weather::ForecastTool < RubyLLM::Tool
       days:       days
     }
   rescue Date::Error
-    { error: "Data inválida. Use o formato AAAA-MM-DD." }
+    { error: "Invalid date. Use YYYY-MM-DD." }
   end
 end

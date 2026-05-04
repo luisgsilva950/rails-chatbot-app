@@ -1,9 +1,9 @@
 class CashFlow::DailyRevenueTool < RubyLLM::Tool
-  description "Resumo do fluxo de caixa de um dia: total recebido e detalhamento por método de pagamento."
+  description "Cash-flow summary for a single day: total received and breakdown by payment method."
 
   params do
     string :date, required: false,
-           description: "Data no formato AAAA-MM-DD. Padrão: hoje."
+           description: "Date in YYYY-MM-DD format. Defaults to today."
   end
 
   def execute(date: nil)
@@ -18,7 +18,7 @@ class CashFlow::DailyRevenueTool < RubyLLM::Tool
       by_method:   breakdown(payments)
     }
   rescue Date::Error
-    { error: "Data inválida. Use o formato AAAA-MM-DD." }
+    { error: "Invalid date. Use YYYY-MM-DD." }
   end
 
   private
