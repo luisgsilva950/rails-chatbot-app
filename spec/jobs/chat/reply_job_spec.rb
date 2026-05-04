@@ -7,21 +7,24 @@ RSpec.describe Chat::ReplyJob, type: :job do
 
   before do
     chat.messages.create!(role: "user", content: "Olá")
+    allow(Chat).to receive(:find).with(chat.id).and_return(chat)
+    allow(chat).to receive(:with_model).and_return(chat)
+    allow(chat).to receive(:with_instructions).and_return(chat)
+    allow(chat).to receive(:with_tools).and_return(chat)
   end
 
   it "broadcasts streamed chunks and a final done marker" do
     chunk_struct       = Struct.new(:content)
     chunk_with_content = chunk_struct.new("oi")
     chunk_without      = chunk_struct.new("")
-    allow_any_instance_of(Llm::Client).to receive(:stream)
-      .and_yield(chunk_without).and_yield(chunk_with_content)
+    allow(chat).to receive(:complete).and_yield(chunk_without).and_yield(chunk_with_content)
 
     expect { described_class.perform_now(chat.id) }
       .to have_broadcasted_to(chat).from_channel(ConversationChannel).exactly(2).times
   end
 
   it "still broadcasts done when the LLM returned no chunks" do
-    allow_any_instance_of(Llm::Client).to receive(:stream)
+    allow(chat).to receive(:complete)
 
     expect { described_class.perform_now(chat.id) }
       .to have_broadcasted_to(chat).from_channel(ConversationChannel).with(done: true)
