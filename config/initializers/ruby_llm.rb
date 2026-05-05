@@ -5,3 +5,19 @@ RubyLLM.configure do |config|
   config.logger         = Rails.logger
   config.log_level      = Rails.logger.level
 end
+
+# ruby_llm 1.14 has no public hook to inject Faraday middleware, so we
+# prepend a module that adds Llm::TimingMiddleware at the top of the
+# stack inside Connection#setup_middleware. It runs once per HTTP
+# attempt (the retry middleware sits above it), capturing every call
+# the gem makes to a provider — chat completions, embeddings, etc.
+RubyLLM::Connection.prepend(
+  Module.new do
+    private
+
+    def setup_middleware(faraday)
+      faraday.use(Llm::TimingMiddleware)
+      super
+    end
+  end
+)
