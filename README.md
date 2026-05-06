@@ -1,5 +1,7 @@
 # Rails Chatbot App
 
+[![codecov](https://codecov.io/gh/luisgsilva950/rails-chatbot-app/graph/badge.svg?token=oYajspR0Aw)](https://codecov.io/gh/luisgsilva950/rails-chatbot-app)
+
 A simple, well-built chatbot powered by Ruby on Rails 8.1 and
 [`ruby_llm`](https://github.com/crmne/ruby_llm). The user opens a page,
 types a message, and watches the assistant's reply stream back token by

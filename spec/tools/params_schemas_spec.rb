@@ -10,6 +10,8 @@ RSpec.describe "Tool params schemas" do
     Scheduling::UpcomingAppointmentsTool,
     Inventory::LowStockProductsTool,
     Inventory::ProductLookupTool,
+    Inventory::ProductsConsumedOnDatesTool,
+    Inventory::AskAgentTool,
     CashFlow::DailyRevenueTool,
     CashFlow::SalesDaysTool,
     CustomerLookup::FindCustomerByPhoneTool,

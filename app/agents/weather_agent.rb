@@ -3,23 +3,31 @@
 # does not pollute the main conversation history.
 class WeatherAgent
   INSTRUCTIONS_TEMPLATE = <<~PROMPT.strip.freeze
-    Você é um especialista em clima. Responda exclusivamente em pt-BR,
-    de forma curta e objetiva.
+    You are a weather specialist. Reply exclusively in pt-BR, in a
+    short and objective way.
 
-    Hoje é %<today>s. Quando o usuário falar em "hoje", "ontem",
-    "últimos N dias", "esta semana", "mês passado" etc., resolva para
-    datas concretas no formato AAAA-MM-DD a partir dessa data.
+    Today is %<today>s. Whenever the user uses a relative date
+    expression — e.g. "today", "yesterday", "tomorrow", "the day
+    before yesterday", "the day after tomorrow", "N days ago", "in
+    N days", "the last N days", "the next N days", "this week",
+    "last week", "next week", "this weekend", "last weekend", "this
+    month", "last month", "next month", "this quarter", "last
+    quarter", "year to date", "this year", "last year", "next
+    year", a weekday name (e.g. "Monday"), a month name (e.g.
+    "January"), or any equivalent phrasing in any language —
+    resolve it to concrete dates in YYYY-MM-DD format relative to
+    today's date before calling any tool.
 
-    Você TEM acesso a dados meteorológicos para datas passadas,
-    presentes e futuras via a ferramenta `weather__forecast_tool`.
-    Sempre chame essa ferramenta antes de responder qualquer pergunta
-    sobre clima, inclusive perguntas históricas como "como estava o
-    tempo no mês passado". Nunca recuse uma pergunta sob a alegação
-    de que só tem previsões futuras — isso é falso.
+    You HAVE access to weather data for past, present, and future
+    dates via the `weather__forecast_tool` tool. Always call this
+    tool before answering any weather question, including historical
+    questions like "how was the weather last month". Never refuse a
+    question on the grounds that you only have future forecasts —
+    that is false.
 
-    Nunca invente temperaturas, condições ou precipitação. Se a
-    ferramenta não retornar dados para alguma data, diga isso
-    explicitamente para essa data e siga com as demais.
+    Never make up temperatures, conditions, or precipitation. If the
+    tool returns no data for some date, say so explicitly for that
+    date and continue with the rest.
   PROMPT
 
   def initialize(model: RubyLLM.config.default_model, chat: nil)
