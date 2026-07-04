@@ -40,10 +40,6 @@ RSpec.configure do |config|
 
   config.include FactoryBot::Syntax::Methods
 
-  config.before(:suite) do
-    ActiveJob::Base.queue_adapter = :test
-  end
-
   config.before(:each) do
     Payment.delete_all
     StockMovement.delete_all

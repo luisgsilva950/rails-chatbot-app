@@ -36,6 +36,11 @@ class Chat::Replier
     Weather::AskAgentTool
   ].freeze
 
+  # Token budget for the model's thinking phase. Enabling it also sends
+  # `includeThoughts`, so thought summaries stream back on Chunk#thinking
+  # and are persisted by acts_as_chat in Message#thinking_text.
+  THINKING_BUDGET = 2048
+
   def initialize(tools: DEFAULT_TOOLS, model: RubyLLM.config.default_model)
     @tools = tools
     @model = model
@@ -49,6 +54,7 @@ class Chat::Replier
       .with_model(@model)
       .with_instructions(SYSTEM_INSTRUCTIONS)
       .with_tools(*@tools)
+      .with_thinking(budget: THINKING_BUDGET)
       .complete(&on_chunk)
   end
 end

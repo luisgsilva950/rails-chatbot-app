@@ -7,6 +7,7 @@ RSpec.describe Chat::Replier do
     allow(chat).to receive(:with_model).and_return(chat)
     allow(chat).to receive(:with_instructions).and_return(chat)
     allow(chat).to receive(:with_tools).and_return(chat)
+    allow(chat).to receive(:with_thinking).and_return(chat)
     allow(chat).to receive(:complete)
   end
 
@@ -20,6 +21,7 @@ RSpec.describe Chat::Replier do
       expect(chat).to have_received(:with_model).with("gemini-2.5-flash")
       expect(chat).to have_received(:with_instructions).with(described_class::SYSTEM_INSTRUCTIONS)
       expect(chat).to have_received(:with_tools).with(*described_class::DEFAULT_TOOLS)
+      expect(chat).to have_received(:with_thinking).with(budget: described_class::THINKING_BUDGET)
       expect(chat).to have_received(:complete) do |&captured|
         expect(captured).to eq(block)
       end

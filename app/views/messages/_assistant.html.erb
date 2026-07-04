@@ -1,5 +1,13 @@
 <article class="message message--assistant">
   <%= render partial: "messages/avatar", locals: { role: "assistant" } %>
   <header class="message__role"><%= t("messages.role.assistant") %></header>
-  <div class="message__bubble" data-markdown="true" data-raw="<%= assistant.content %>"><%= simple_format(assistant.content) %></div>
+  <div class="message__content">
+    <% if assistant.thinking_text.present? %>
+      <details class="message__thinking">
+        <summary><%= t("messages.thinking") %></summary>
+        <div class="message__thinking-body"><%= assistant.thinking_text %></div>
+      </details>
+    <% end %>
+    <div class="message__bubble" data-markdown="true" data-raw="<%= assistant.content %>"><%= simple_format(assistant.content) %></div>
+  </div>
 </article>

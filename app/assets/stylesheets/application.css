@@ -252,6 +252,37 @@ html:has(.chat), body:has(.chat) { overflow: hidden; }
   font-size: 0.8125rem;
 }
 .message__bubble a { color: inherit; text-decoration: underline; }
+
+/* Thinking (model thought summary): live block while streaming and a
+   collapsed <details> on persisted messages. */
+.message__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.message__thinking {
+  font-size: 0.8125rem;
+  color: #6b7480;
+  border-left: 2px solid var(--border);
+  padding-left: 0.5rem;
+}
+
+.message__thinking summary {
+  cursor: pointer;
+  font-style: italic;
+  user-select: none;
+}
+
+.message__thinking-body {
+  margin-top: 0.25rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+.message--thinking-block { align-self: flex-start; }
 .message__bubble h1,
 .message__bubble h2,
 .message__bubble h3,

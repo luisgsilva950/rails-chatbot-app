@@ -4,8 +4,8 @@
 
 A simple, well-built **chatbot** powered by `ruby_llm`. The user opens a
 page, types a message, and watches the assistant's reply stream back token
-by token over **ActionCable**. Conversations are persisted so the user can
-come back and pick up where they left off.
+by token over **HTTP + Server-Sent Events (SSE)**. Conversations are
+persisted so the user can come back and pick up where they left off.
 
 That's the whole product. No multi-tenancy, no payments, no admin
 dashboard, no agents-with-tools layer. **One thing, done well.**
@@ -22,10 +22,9 @@ identifiers, and commit messages in English. No exceptions.
 | Layer        | Technology                                                |
 | ------------ | --------------------------------------------------------- |
 | Backend      | Ruby on Rails 8.1, Ruby 3.4.2                             |
-| Database     | PostgreSQL 16 (multi-db: primary + cache + queue + cable) |
-| Background   | Solid Queue                                               |
+| Database     | PostgreSQL 16 (multi-db: primary + cache)                 |
 | Cache        | Solid Cache                                               |
-| Realtime     | Solid Cable + ActionCable (chat streaming)                |
+| Realtime     | HTTP + SSE via `ActionController::Live` (chat streaming)  |
 | Frontend     | ERB + Hotwire (Turbo + Stimulus) via importmap            |
 | Styling      | Plain CSS in `app/assets/stylesheets/` — small and boring |
 | LLM          | `ruby_llm` (provider-agnostic; configured per env)        |
@@ -33,8 +32,9 @@ identifiers, and commit messages in English. No exceptions.
 | Deploy       | Kamal 2 + Docker                                          |
 | Local dev    | `docker compose up -d` (Postgres) + `bin/dev`             |
 
-No React. No Vite. No Tailwind. No Sidekiq/Redis. No OmniAuth/Pundit until
-a real auth requirement appears. Add a tool only when the **second
+No React. No Vite. No Tailwind. No Sidekiq/Redis. No ActionCable. No
+background jobs — the reply streams inside the request. No OmniAuth/Pundit
+until a real auth requirement appears. Add a tool only when the **second
 consumer** appears.
 
 ---
@@ -95,7 +95,7 @@ Avoid `if/else` chains. Prefer:
 def call(message)
   return unless message.user?
 
-  Chat::ReplyJob.perform_later(message.id)
+  reply_to(message)
 end
 ```
 
@@ -126,8 +126,7 @@ SRP and DIP matter most.
 ### Single Responsibility
 
 - **Models:** validations, associations, scopes, enums. Nothing else.
-- **Controllers:** receive request → delegate → respond.
-- **Channels:** subscribe/unsubscribe and broadcast. No business logic.
+- **Controllers:** receive request → delegate → respond (or stream).
 - **POROs:** one business operation, one public method (`#call`).
 - **Views/partials:** presentation only.
 
@@ -190,10 +189,12 @@ end
 
 ```ruby
 class MessagesController < ApplicationController
+  include ActionController::Live
+
   def create
-    @message = @conversation.messages.create!(message_params.merge(role: "user"))
-    Chat::ReplyJob.perform_later(@message.id)
-    redirect_to @conversation
+    @chat.messages.create!(role: "user", content: message_params[:content])
+    prepare_sse_headers
+    Chat::ReplyStream.new.call(@chat, response.stream)
   end
 end
 ```
@@ -204,9 +205,9 @@ end
 - **Always prefer model validations.**
 - **Callbacks scoped to the aggregate root only.** A `Message` callback
   may touch its `Conversation`. It must **not** call the LLM, send email,
-  or enqueue jobs for unrelated concerns.
-- Cross-cutting side effects (LLM calls, broadcasts) → **explicit calls
-  in the controller, channel, or job**.
+  or trigger unrelated side effects.
+- Cross-cutting side effects (LLM calls, streaming) → **explicit calls
+  in the controller, delegated to a PORO**.
 
 ### Business logic extraction
 
@@ -215,36 +216,30 @@ When logic outgrows the model or controller, extract a PORO under
 `app/services/llm/`).
 
 - Single public entry point: `#call`.
-- `VerbSubject` naming: `Chat::Replier`, `Chat::ReplyJob`.
+- `VerbSubject` naming: `Chat::Replier`, `Chat::ReplyStream`.
 - Receive collaborators in the constructor (kw args + defaults).
 
-### Background jobs
+### Streaming (HTTP + SSE)
 
-- All LLM calls go into Solid Queue jobs. **Never call the LLM from a
-  request thread.**
-- Jobs **must be idempotent** — they will retry.
-- Jobs are thin: they call a model or PORO, they don't contain business
-  logic.
-
-### Channels (ActionCable)
-
-- One channel per resource: `ConversationChannel` streams a single
-  conversation.
-- Authorize on `subscribed` (`reject` if the visitor doesn't own the
-  conversation).
-- The job streams chunks via `ConversationChannel.broadcast_to` —
-  channels themselves do not call the LLM.
-
-```ruby
-class ConversationChannel < ApplicationCable::Channel
-  def subscribed
-    conversation = Conversation.find_by(id: params[:id])
-    return reject unless conversation
-
-    stream_for conversation
-  end
-end
-```
+- There are **no background jobs and no ActionCable**. The assistant
+  reply is generated inside the `POST /chats/:chat_id/messages` request
+  and streamed to the client as Server-Sent Events via
+  `ActionController::Live`.
+- `Chat::ReplyStream` owns the SSE protocol: it wraps the response
+  stream in `ActionController::Live::SSE`, forwards content chunks and
+  tool-call events from `Chat::Replier`, emits a final `done` event, and
+  **always closes the stream** in an `ensure`.
+- Each event is a small JSON object: `{"thinking": "..."}`,
+  `{"chunk": "..."}`, `{"tool": "..."}`, `{"done": true}`.
+- Thinking is enabled in `Chat::Replier` (`with_thinking`); thought
+  summaries stream as `thinking` events and are persisted by
+  `acts_as_chat` in `Message#thinking_text`.
+- The controller only creates the user message, sets the SSE headers
+  (`Content-Type: text/event-stream`, `Cache-Control: no-cache`,
+  `X-Accel-Buffering: no`), and hands `response.stream` to
+  `Chat::ReplyStream` — no LLM logic inline.
+- A streaming request holds a Puma thread until the reply finishes.
+  Size `RAILS_MAX_THREADS` with that in mind.
 
 ### Routing
 
@@ -264,8 +259,9 @@ stream in. Keep it that way.
 - One Stimulus controller per interactive piece (e.g.
   `chat_controller.js`): submit the form, append streamed chunks to the
   DOM, autoscroll.
-- Turbo for navigation; ActionCable (consumer in
-  `app/javascript/channels/`) for the live token stream.
+- Turbo for navigation; the live token stream is read with `fetch` from
+  the SSE response of the message `POST` (no ActionCable, no
+  `EventSource`).
 - Plain CSS in `app/assets/stylesheets/`. Small files. No design system,
   no component library, no preprocessor pipeline beyond Propshaft.
 - Accessibility basics: labelled form, `role="log"` for the message list,
@@ -282,26 +278,31 @@ tool — stop. The product doesn't need it.
   choice, system instructions, and default tool list, and calls
   `complete` on the persisted `Chat`. `acts_as_chat` is the ruby_llm
   boundary — there is no separate `Llm::Client` wrapper.
-- **Always invoked from a job**, never inline in a request.
-- The job persists every assistant message (`role: "assistant"`, content,
-  token usage if available).
-- **Streaming:** the job yields chunks and broadcasts each one over
-  `ConversationChannel`. The full message is saved once on completion.
-- Errors are caught, logged (without prompt body), persisted on the
-  message (`status: "failed"`, error class), and surfaced to the UI as a
-  friendly pt-BR string.
+- **Invoked from the request through `Chat::ReplyStream`**, which writes
+  the reply to the SSE response stream — never called directly from a
+  controller action body.
+- `acts_as_chat` persists every assistant message (`role: "assistant"`,
+  content, token usage if available) once on completion.
+- **Streaming:** `Chat::ReplyStream` yields chunks from `Chat::Replier`
+  and writes each one as an SSE event. The full message is saved once on
+  completion — never persist partial content mid-stream.
+- Errors are caught, logged (without prompt body), and surfaced to the
+  UI as a friendly pt-BR string.
 - API keys live in **encrypted credentials** or environment variables.
   Never in source.
 
 ```ruby
-class Chat::ReplyJob < ApplicationJob
-  queue_as :default
+class Chat::ReplyStream
+  def initialize(replier: Chat::Replier.new)
+    @replier = replier
+  end
 
-  def perform(message_id)
-    message = Message.find(message_id)
-    Chat::Replier.new.call(message.conversation) do |chunk|
-      ConversationChannel.broadcast_to(message.conversation, chunk: chunk)
-    end
+  def call(chat, io)
+    sse = ActionController::Live::SSE.new(io)
+    stream_reply(chat, sse)
+    sse.write(done: true)
+  ensure
+    sse.close
   end
 end
 ```
@@ -395,10 +396,9 @@ end
 ### Multi-database (gotcha)
 
 The Solid stack runs on **separate Postgres databases per role**
-(primary, cache, queue, cable). After any change to `db/queue_schema.rb`,
-`db/cache_schema.rb`, or `db/cable_schema.rb`, run
-`bin/rails db:prepare`. If `solid_queue_processes` or similar tables are
-missing, that's the fix.
+(primary, cache). After any change to `db/cache_schema.rb`, run
+`bin/rails db:prepare`. If Solid Cache tables are missing, that's the
+fix.
 
 ---
 
@@ -408,8 +408,8 @@ missing, that's the fix.
   with `conversation_id` only.
 - Rate-limit message creation per IP / conversation (Rails 8
   `rate_limit`).
-- CSRF tokens on every form. ActionCable connections are authenticated
-  by the same session/cookie.
+- CSRF tokens on every form. The SSE stream is the response to the
+  authenticated message `POST` — same session/cookie, same CSRF check.
 - LLM provider API keys via `Rails.application.credentials` or ENV.
   Never hardcoded, never in logs.
 - Sanitize what you render. The chatbot's reply is **plain text** by
@@ -443,14 +443,12 @@ missing, that's the fix.
 
 ### Layers (in order of preference)
 
-1. **Request specs** — primary layer. Happy path + validation failure +
-   rate-limit / auth where applicable.
-2. **Channel specs** — `ConversationChannel` subscribe/reject and
-   broadcast behavior.
-3. **Model specs** — validations, scopes, instance methods.
-4. **Job / PORO specs** — `Chat::ReplyJob`, `Chat::Replier` (with VCR
-   for the LLM call).
-5. **System specs** — Capybara for one golden path: send a message, see
+1. **Request specs** — primary layer. Happy path (including the SSE
+   body) + validation failure + rate-limit / auth where applicable.
+2. **Model specs** — validations, scopes, instance methods.
+3. **PORO specs** — `Chat::ReplyStream`, `Chat::Replier` (with VCR for
+   the LLM call).
+4. **System specs** — Capybara for one golden path: send a message, see
    the streamed reply appear.
 
 ---
@@ -461,12 +459,11 @@ missing, that's the fix.
 | ----------------------------------------- | ------------------------------------------------------------------- |
 | Service objects for trivial CRUD          | Indirection with no value.                                          |
 | Callbacks triggering external effects     | Hidden, untestable, ordering nightmares.                            |
-| Inline LLM calls                          | Slow, non-retryable, no audit trail. Use a job.                     |
-| LLM logic in a channel or controller      | Channels broadcast; controllers orchestrate. Logic lives in a PORO. |
+| LLM logic inline in a controller          | Controllers orchestrate. Logic lives in a PORO (`Chat::ReplyStream`). |
+| Sidekiq, Solid Queue, ActionCable         | The reply streams inside the request over SSE. No async pipeline.  |
 | Hardcoded user strings                    | Always `t("...")`, even with one locale.                            |
 | Tailwind, shadcn, styled-components       | Not part of this stack. Plain CSS only.                             |
 | React, Vite, SPA routers                  | Not needed. ERB + Hotwire is enough.                                |
-| Sidekiq / Redis                           | Solid Queue on Postgres is the choice.                              |
 | Service objects without `#call`           | Single public entry point keeps POROs honest.                       |
 | `app/services/` grab-bag                  | Use domain-named subfolders (`chat/`, `llm/`).                      |
 | Non-English schema/code                   | Codebase must be universally readable.                              |
@@ -481,7 +478,7 @@ missing, that's the fix.
 ## Naming
 
 - Classes: nouns or `VerbSubject` for POROs (`Chat::Replier`,
-  `Chat::ReplyJob`).
+  `Chat::ReplyStream`).
 - Methods: descriptive verbs.
 - Variables: descriptive. No abbreviations.
 - Scopes: composable (`recent`, `with_pending_reply`).
@@ -512,7 +509,7 @@ missing, that's the fix.
 
 ```bash
 bin/setup                            # idempotent dev setup
-bin/dev                              # web + jobs (foreman)
+bin/dev                              # dev server (Puma)
 docker compose up -d                 # Postgres
 
 bundle exec rspec                    # all tests
@@ -531,12 +528,12 @@ bin/rails console
 - [ ] Single responsibility per class?
 - [ ] Classes ≤ 100 lines, methods ≤ 5 lines?
 - [ ] Controllers thin (≤ 5 lines per action, one ivar to the view)?
-- [ ] Business logic in POROs / jobs, not controllers or channels?
+- [ ] Business logic in POROs, not controllers?
 - [ ] Validations on the model — not in POROs / controllers?
-- [ ] LLM called only from a job, through `Chat::Replier` (main chat)
-      or an `Agent` (sub-domain)?
+- [ ] LLM called only through `Chat::Replier` (main chat, streamed by
+      `Chat::ReplyStream`) or an `Agent` (sub-domain)?
 - [ ] Strings in `pt-BR.yml`, accessed via `t(...)`?
-- [ ] Request / channel specs cover happy path + failure?
+- [ ] Request / PORO specs cover happy path + failure?
 - [ ] **100% line + branch coverage on new/changed code** (`simplecov`)?
 - [ ] No mocks for Active Record? VCR for the LLM provider only?
 - [ ] `bin/rubocop` passes with zero offenses?

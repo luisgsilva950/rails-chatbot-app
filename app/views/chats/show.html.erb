@@ -2,7 +2,6 @@
 
 <section class="chat"
          data-controller="chat"
-         data-chat-id-value="<%= @chat.id %>"
          data-chat-url-value="<%= chat_messages_path(@chat) %>">
   <header class="chat-header">
     <%= link_to "←", chats_path, class: "chat-back", "aria-label": t("chats.title") %>
@@ -38,6 +37,15 @@
       </span>
       <header class="message__role"><%= t("messages.role.assistant") %></header>
       <div class="message__bubble"></div>
+    </article>
+  </template>
+
+  <template data-chat-target="thinkingTemplate">
+    <article class="message message--assistant message--thinking-block">
+      <details class="message__thinking" open>
+        <summary><%= t("chats.thinking") %></summary>
+        <div class="message__thinking-body"></div>
+      </details>
     </article>
   </template>
 
