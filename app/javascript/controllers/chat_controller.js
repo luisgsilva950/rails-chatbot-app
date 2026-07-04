@@ -1,33 +1,29 @@
 import { Controller } from "@hotwired/stimulus"
-import consumer from "channels/consumer"
 import { setMarkdown } from "lib/markdown"
 
 // Streams assistant chunks for a single chat into the message log.
 //
 // Submits the form via fetch (no full-page reload), inserts the user
 // bubble immediately, shows a typing indicator while waiting for the
-// first chunk, then streams chunks into a single assistant bubble.
+// first chunk, then reads the Server-Sent Events from the POST response
+// and streams chunks into a single assistant bubble.
 export default class extends Controller {
   static targets = [
     "messages", "form", "input", "submitButton",
     "userTemplate", "assistantTemplate", "typingTemplate"
   ]
-  static values = { id: Number, url: String }
+  static values = { url: String }
 
   connect() {
     if (this.hasSubmitButtonTarget && !this.submitButtonTarget.dataset.defaultLabel) {
       this.submitButtonTarget.dataset.defaultLabel = this.submitButtonTarget.textContent.trim()
     }
-    this.subscription = consumer.subscriptions.create(
-      { channel: "ConversationChannel", id: this.idValue },
-      { received: (data) => this.#onMessage(data) }
-    )
     this.#renderExistingMarkdown()
     this.#scrollToBottom()
   }
 
   disconnect() {
-    this.subscription?.unsubscribe()
+    this.abortController?.abort()
   }
 
   #renderExistingMarkdown() {
@@ -48,21 +44,15 @@ export default class extends Controller {
     this.#setSending(true)
 
     try {
-      const formData = new FormData(this.formElement())
-      formData.set("message[content]", content)
-      const response = await fetch(this.urlValue, {
-        method: "POST",
-        headers: { "Accept": "application/json" },
-        body: formData,
-        credentials: "same-origin"
-      })
+      const response = await this.#postMessage(content)
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       this.inputTarget.value = ""
+      await this.#consumeStream(response.body)
     } catch (err) {
       console.error(err)
-      this.#hideTyping()
       this.#showError()
     } finally {
+      this.#finalize()
       this.#setSending(false)
       this.inputTarget.focus()
     }
@@ -70,6 +60,49 @@ export default class extends Controller {
 
   formElement() {
     return this.hasFormTarget ? this.formTarget : this.element.querySelector("form")
+  }
+
+  #postMessage(content) {
+    const formData = new FormData(this.formElement())
+    formData.set("message[content]", content)
+    this.abortController = new AbortController()
+    return fetch(this.urlValue, {
+      method: "POST",
+      headers: { "Accept": "text/event-stream" },
+      body: formData,
+      credentials: "same-origin",
+      signal: this.abortController.signal
+    })
+  }
+
+  async #consumeStream(body) {
+    const reader = body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ""
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      buffer = this.#drainEvents(buffer)
+    }
+  }
+
+  // SSE events are separated by a blank line; the tail of the buffer may
+  // hold an incomplete event, so it's returned for the next read to finish.
+  #drainEvents(buffer) {
+    const events = buffer.split("\n\n")
+    const incomplete = events.pop()
+    events.forEach((event) => this.#dispatchEvent(event))
+    return incomplete
+  }
+
+  #dispatchEvent(rawEvent) {
+    const data = rawEvent
+      .split("\n")
+      .filter((line) => line.startsWith("data:"))
+      .map((line) => line.slice(5).trim())
+      .join("\n")
+    if (data) this.#onMessage(JSON.parse(data))
   }
 
   #onMessage(data) {

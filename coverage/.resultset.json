@@ -1,7 +1,7 @@
 {
   "RSpec": {
     "coverage": {
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/agents/inventory_agent.rb": {
+      "/home/user/rails-chatbot-app/app/agents/inventory_agent.rb": {
         "lines": [
           1,
           null,
@@ -11,6 +11,15 @@
           null,
           null,
           1,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -57,7 +66,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/tools/inventory/products_consumed_on_dates_tool.rb": {
+      "/home/user/rails-chatbot-app/app/tools/inventory/products_consumed_on_dates_tool.rb": {
         "lines": [
           1,
           1,
@@ -132,7 +141,7 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/tools/inventory/low_stock_products_tool.rb": {
+      "/home/user/rails-chatbot-app/app/tools/inventory/low_stock_products_tool.rb": {
         "lines": [
           1,
           1,
@@ -166,7 +175,7 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/tools/inventory/product_lookup_tool.rb": {
+      "/home/user/rails-chatbot-app/app/tools/inventory/product_lookup_tool.rb": {
         "lines": [
           1,
           1,
@@ -199,13 +208,21 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/agents/weather_agent.rb": {
+      "/home/user/rails-chatbot-app/app/agents/weather_agent.rb": {
         "lines": [
           null,
           null,
           null,
           1,
           1,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null,
           null,
           null,
@@ -247,55 +264,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/channels/conversation_channel.rb": {
-        "lines": [
-          null,
-          1,
-          1,
-          2,
-          2,
-          null,
-          1,
-          null,
-          null
-        ],
-        "branches": {
-          "[:unless, 0, 5, 4, 5, 29]": {
-            "[:else, 1, 5, 4, 5, 29]": 1,
-            "[:then, 2, 5, 4, 5, 17]": 1
-          }
-        }
-      },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/jobs/chat/reply_job.rb": {
-        "lines": [
-          1,
-          1,
-          null,
-          1,
-          3,
-          null,
-          3,
-          1,
-          null,
-          null,
-          3,
-          2,
-          null,
-          1,
-          null,
-          null,
-          3,
-          null,
-          null
-        ],
-        "branches": {
-          "[:if, 0, 12, 6, 12, 34]": {
-            "[:then, 1, 12, 6, 12, 10]": 1,
-            "[:else, 2, 12, 6, 12, 34]": 1
-          }
-        }
-      },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/services/chat/replier.rb": {
+      "/home/user/rails-chatbot-app/app/services/chat/replier.rb": {
         "lines": [
           null,
           null,
@@ -336,8 +305,8 @@
           null,
           null,
           1,
-          7,
-          7,
+          6,
+          6,
           null,
           null,
           1,
@@ -363,7 +332,7 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/tools/scheduling/list_appointments_for_date_tool.rb": {
+      "/home/user/rails-chatbot-app/app/tools/scheduling/list_appointments_for_date_tool.rb": {
         "lines": [
           1,
           1,
@@ -414,7 +383,7 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/tools/scheduling/upcoming_appointments_tool.rb": {
+      "/home/user/rails-chatbot-app/app/tools/scheduling/upcoming_appointments_tool.rb": {
         "lines": [
           1,
           1,
@@ -441,7 +410,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/tools/cash_flow/daily_revenue_tool.rb": {
+      "/home/user/rails-chatbot-app/app/tools/cash_flow/daily_revenue_tool.rb": {
         "lines": [
           1,
           1,
@@ -484,7 +453,7 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/tools/cash_flow/sales_days_tool.rb": {
+      "/home/user/rails-chatbot-app/app/tools/cash_flow/sales_days_tool.rb": {
         "lines": [
           1,
           1,
@@ -540,7 +509,7 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/tools/customer_lookup/find_customer_by_phone_tool.rb": {
+      "/home/user/rails-chatbot-app/app/tools/customer_lookup/find_customer_by_phone_tool.rb": {
         "lines": [
           1,
           1,
@@ -577,7 +546,7 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/tools/inventory/ask_agent_tool.rb": {
+      "/home/user/rails-chatbot-app/app/tools/inventory/ask_agent_tool.rb": {
         "lines": [
           null,
           null,
@@ -605,7 +574,7 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/tools/weather/ask_agent_tool.rb": {
+      "/home/user/rails-chatbot-app/app/tools/weather/ask_agent_tool.rb": {
         "lines": [
           null,
           null,
@@ -633,7 +602,42 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/services/llm/timing_middleware.rb": {
+      "/home/user/rails-chatbot-app/app/services/chat/reply_stream.rb": {
+        "lines": [
+          null,
+          null,
+          null,
+          1,
+          1,
+          5,
+          null,
+          null,
+          1,
+          5,
+          5,
+          4,
+          null,
+          5,
+          null,
+          null,
+          1,
+          null,
+          1,
+          6,
+          5,
+          4,
+          null,
+          null,
+          null
+        ],
+        "branches": {
+          "[:if, 0, 22, 6, 22, 63]": {
+            "[:then, 1, 22, 6, 22, 37]": 2,
+            "[:else, 2, 22, 6, 22, 63]": 2
+          }
+        }
+      },
+      "/home/user/rails-chatbot-app/app/services/llm/timing_middleware.rb": {
         "lines": [
           null,
           null,
@@ -669,7 +673,7 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/services/weather/mock.rb": {
+      "/home/user/rails-chatbot-app/app/services/weather/mock.rb": {
         "lines": [
           null,
           null,
@@ -732,7 +736,7 @@
           }
         }
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/tools/weather/forecast_tool.rb": {
+      "/home/user/rails-chatbot-app/app/tools/weather/forecast_tool.rb": {
         "lines": [
           1,
           1,
@@ -759,7 +763,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/models/payment.rb": {
+      "/home/user/rails-chatbot-app/app/models/payment.rb": {
         "lines": [
           1,
           1,
@@ -779,7 +783,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/models/stock_movement.rb": {
+      "/home/user/rails-chatbot-app/app/models/stock_movement.rb": {
         "lines": [
           1,
           1,
@@ -795,7 +799,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/models/appointment_photo.rb": {
+      "/home/user/rails-chatbot-app/app/models/appointment_photo.rb": {
         "lines": [
           1,
           1,
@@ -810,7 +814,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/models/appointment.rb": {
+      "/home/user/rails-chatbot-app/app/models/appointment.rb": {
         "lines": [
           1,
           1,
@@ -836,7 +840,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/models/vehicle.rb": {
+      "/home/user/rails-chatbot-app/app/models/vehicle.rb": {
         "lines": [
           1,
           1,
@@ -854,7 +858,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/models/customer.rb": {
+      "/home/user/rails-chatbot-app/app/models/customer.rb": {
         "lines": [
           1,
           1,
@@ -870,7 +874,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/models/product.rb": {
+      "/home/user/rails-chatbot-app/app/models/product.rb": {
         "lines": [
           1,
           1,
@@ -893,7 +897,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/models/service_type.rb": {
+      "/home/user/rails-chatbot-app/app/models/service_type.rb": {
         "lines": [
           1,
           1,
@@ -910,7 +914,7 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/models/employee.rb": {
+      "/home/user/rails-chatbot-app/app/models/employee.rb": {
         "lines": [
           1,
           1,
@@ -927,54 +931,58 @@
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/controllers/chats_controller.rb": {
+      "/home/user/rails-chatbot-app/app/controllers/messages_controller.rb": {
         "lines": [
           1,
+          1,
+          null,
+          1,
+          null,
+          1,
+          2,
+          2,
+          2,
+          null,
+          null,
+          1,
+          null,
           1,
           2,
           null,
           null,
           1,
-          1,
+          2,
           null,
           null,
           1,
-          1,
-          1,
+          2,
+          2,
+          2,
           null,
           null
         ],
         "branches": {}
       },
-      "/Users/luisdomingues/Documents/Projects/rails-chatbot-app/app/controllers/messages_controller.rb": {
+      "/home/user/rails-chatbot-app/app/controllers/chats_controller.rb": {
         "lines": [
           1,
           1,
-          null,
-          1,
-          2,
-          2,
-          null,
-          2,
-          3,
-          3,
-          null,
-          null,
-          null,
-          1,
-          null,
-          1,
           2,
           null,
           null,
           1,
-          2,
+          1,
+          null,
+          null,
+          1,
+          1,
+          1,
           null,
           null
         ],
         "branches": {}
       }
     },
-    "timestamp": 1778021299
+    "timestamp": 1783134606
   }
 }

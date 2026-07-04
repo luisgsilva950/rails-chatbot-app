@@ -2,7 +2,6 @@
 
 <section class="chat"
          data-controller="chat"
-         data-chat-id-value="<%= @chat.id %>"
          data-chat-url-value="<%= chat_messages_path(@chat) %>">
   <header class="chat-header">
     <%= link_to "←", chats_path, class: "chat-back", "aria-label": t("chats.title") %>

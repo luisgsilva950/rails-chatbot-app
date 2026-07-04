@@ -5,8 +5,8 @@
 A simple, well-built chatbot powered by Ruby on Rails 8.1 and
 [`ruby_llm`](https://github.com/crmne/ruby_llm). The user opens a page,
 types a message, and watches the assistant's reply stream back token by
-token over **ActionCable**. Conversations are persisted, so you can come
-back and pick up where you left off.
+token over **HTTP + Server-Sent Events (SSE)**. Conversations are
+persisted, so you can come back and pick up where you left off.
 
 One thing, done well.
 
@@ -17,8 +17,10 @@ One thing, done well.
 ## Stack
 
 - **Ruby** 3.4.2 / **Rails** 8.1
-- **PostgreSQL** 16 (multi-db: primary + cache + queue + cable)
-- **Solid Queue** / **Solid Cache** / **Solid Cable**
+- **PostgreSQL** 16 (multi-db: primary + cache)
+- **Solid Cache**
+- **HTTP + SSE** (`ActionController::Live`) for the live token stream —
+  no ActionCable, no background jobs
 - **Hotwire** (Turbo + Stimulus) via importmap
 - **`ruby_llm`** for the LLM
 - **RSpec** + FactoryBot + VCR
@@ -96,7 +98,7 @@ openai_api_key: ...
 ```bash
 bin/start                            # check LLM key, start Postgres, setup, run dev server
 bin/setup                            # idempotent dev setup (gems + db + dev server)
-bin/dev                              # web + jobs (foreman)
+bin/dev                              # dev server (Puma)
 docker compose up -d                 # Postgres
 
 bundle exec rspec                    # run the test suite
@@ -114,21 +116,21 @@ bin/rails console
 ```
 app/
 ├── agents/          # Sub-agents (e.g. WeatherAgent) for focused domains
-├── channels/        # ConversationChannel: per-conversation stream
-├── controllers/     # Thin, RESTful
-├── jobs/            # Chat::ReplyJob — every LLM call goes here
+├── controllers/     # Thin, RESTful (MessagesController streams SSE)
 ├── models/          # Conversation, Message
 ├── services/
-│   └── chat/        # Chat::Replier (orchestrates the LLM stream)
+│   └── chat/        # Chat::Replier + Chat::ReplyStream (LLM stream → SSE)
 ├── tools/           # RubyLLM::Tool subclasses, grouped by domain
 └── views/           # ERB + Stimulus controllers under app/javascript/
 ```
 
 Key rules (full details in [CLAUDE.md](CLAUDE.md)):
 
-- Every LLM call happens inside a job, through `Chat::Replier` (or a
-  sub-agent like `WeatherAgent`).
-- Channels only `subscribe` and `broadcast`. No business logic.
+- Every LLM call goes through `Chat::Replier` (or a sub-agent like
+  `WeatherAgent`), streamed to the client by `Chat::ReplyStream` as
+  Server-Sent Events.
+- Controllers stay thin: create the message, hand the response stream
+  to `Chat::ReplyStream`. No LLM logic inline.
 - Validations live on the model. Always.
 - User-facing strings are pt-BR via `t("...")` in
   `config/locales/pt-BR.yml`.

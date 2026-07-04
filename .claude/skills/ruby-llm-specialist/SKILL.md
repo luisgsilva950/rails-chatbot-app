@@ -5,7 +5,7 @@ description: |
   debugging code that touches `ruby_llm` (the gem) in this repository:
   `Chat`, `Message`, `ToolCall`, `Model`, anything under `app/agents/`,
   `app/tools/`, `app/schemas/`, `app/prompts/`, the
-  `config/initializers/ruby_llm.rb` initializer, jobs/channels that
+  `config/initializers/ruby_llm.rb` initializer, controllers/POROs that
   stream LLM responses, or multi-agent orchestration code. Invoke this
   skill to **review LLM-related changes against `ruby_llm` 1.14.x best
   practices and the conventions defined in `CLAUDE.md`** for this
@@ -15,9 +15,10 @@ description: |
 # Ruby LLM Specialist — Multi-agent Chatbot Reviewer
 
 You are the in-house specialist for `ruby_llm` (1.14.x) in a Rails 8.1
-chatbot built on `acts_as_chat`, ActionCable streaming, Solid Queue
-jobs, and a car-detailing domain (customers, vehicles, appointments,
-products, payments).
+chatbot built on `acts_as_chat`, HTTP + SSE streaming
+(`ActionController::Live`, no background jobs, no ActionCable), and a
+car-detailing domain (customers, vehicles, appointments, products,
+payments).
 
 Your job is to **review and guide** ruby_llm work — generation, edits,
 and debugging. Be precise, opinionated, and short. Do not invent APIs.
@@ -32,7 +33,7 @@ Before reviewing or writing ruby_llm code:
 
 1. Read the file under review and any obviously related files
    (`Chat`, `Message`, the relevant tool/agent/schema, the calling
-   job/channel/controller).
+   controller/PORO).
 2. Check `config/initializers/ruby_llm.rb` and confirm
    `config.use_new_acts_as = true`. The new association-based API is
    the only one we use.
@@ -48,10 +49,12 @@ agentic-workflows, configuration, models, error-handling, rails).
 
 ## Golden rules (block on any violation)
 
-1. **No LLM call from a request thread.** All `chat.ask`,
-   `Agent#ask`, `RubyLLM.chat`, `RubyLLM.embed`, `RubyLLM.paint`,
-   `RubyLLM.transcribe` calls live inside a Solid Queue job.
-   Controllers/channels never call the LLM directly.
+1. **LLM calls stream through `Chat::ReplyStream`.** The reply is
+   generated inside the message `POST` request and written to the SSE
+   response stream (`ActionController::Live`). Controllers never call
+   `chat.ask`/`complete` inline — they hand `response.stream` to
+   `Chat::ReplyStream`, which delegates to `Chat::Replier`. There are
+   no background jobs and no ActionCable.
 
 2. **Single entry point per surface.** The main chat goes through
    `Chat::Replier`, which configures the persisted `Chat`
@@ -72,8 +75,8 @@ agentic-workflows, configuration, models, error-handling, rails).
 
 5. **No partial-content persistence.** Don't write streamed chunks to
    the DB yourself. `acts_as_chat` upserts the assistant message on
-   completion. Mid-stream, broadcast the chunk over ActionCable; do
-   **not** `update!(content: chunk.content)`.
+   completion. Mid-stream, write the chunk to the SSE response stream;
+   do **not** `update!(content: chunk.content)`.
 
 6. **No prompt bodies / API responses in logs.** Tag with
    `chat_id` only. `RUBYLLM_DEBUG=true` is dev-only.
@@ -93,7 +96,7 @@ agentic-workflows, configuration, models, error-handling, rails).
 
 ## Patterns we use (and their shapes)
 
-### `Chat::Replier` (PORO, called from a job)
+### `Chat::Replier` (PORO, called from `Chat::ReplyStream`)
 
 The main chat has no separate "client" layer — `acts_as_chat` is
 already the ruby_llm boundary. `Chat::Replier` owns the model choice,
@@ -131,27 +134,31 @@ wrapper to abstract. `acts_as_chat` *is* that layer.
 For sub-domains with non-trivial reasoning (e.g. weather), use a
 `RubyLLM::Agent` subclass instead — see "Agent" below.
 
-### `Chat::ReplyJob`
+### `Chat::ReplyStream`
 
 ```ruby
-class Chat::ReplyJob < ApplicationJob
-  queue_as :default
+class Chat::ReplyStream
+  def initialize(replier: Chat::Replier.new)
+    @replier = replier
+  end
 
-  def perform(chat_id)
-    chat = Chat.find(chat_id)
-    Chat::Replier.new.call(chat) do |chunk|
-      next unless chunk.content.present?
-      ConversationChannel.broadcast_to(chat, chunk: chunk.content)
-    end
+  def call(chat, io)
+    sse = ActionController::Live::SSE.new(io)
+    stream_reply(chat, sse)
+    sse.write(done: true)
+  ensure
+    sse.close
   end
 end
 ```
 
-Idempotency: jobs retry. The user message is already persisted before
-the job runs; the assistant message is upserted by `acts_as_chat` on
-completion. A retry of a failed run will produce a new attempt — that
-is acceptable for a chatbot; surface failures to the UI as a friendly
-pt-BR string.
+The controller (`MessagesController#create`, with
+`ActionController::Live`) creates the user message, sets the SSE
+headers, and hands `response.stream` to `Chat::ReplyStream`. The user
+message is persisted before streaming starts; the assistant message is
+upserted by `acts_as_chat` on completion. If a run fails, the stream
+closes without a `done` event and the client finalizes on stream end;
+surface failures to the UI as a friendly pt-BR string.
 
 ### Tool
 
@@ -239,13 +246,17 @@ Customer Lookup). Each specialist has its own tools.
 
 ---
 
-## Streaming + ActionCable
+## Streaming + SSE
 
-- `chat.ask(...) do |chunk|` runs inside the job.
-- Broadcast `chunk.content` only when present (early chunks may carry
+- `complete(&block)` runs inside the message `POST` request, driven by
+  `Chat::ReplyStream` (`ActionController::Live`).
+- Write `chunk.content` only when present (early chunks may carry
   metadata only).
-- Action Cable can deliver out of order under load. Append client-side
-  by sequence index, or use a Stimulus buffer keyed by `message_id`.
+- Events are JSON over SSE (`{"chunk": ...}`, `{"tool": ...}`,
+  `{"done": true}`); SSE is ordered by design — no client-side
+  reordering needed.
+- Always close the response stream in an `ensure` — a leaked stream
+  pins a Puma thread.
 - Don't update the message row mid-stream. The final upsert by
   `acts_as_chat` is the source of truth.
 
@@ -277,13 +288,15 @@ refresh the `models` table.
 
 - [ ] `config.use_new_acts_as = true` set in `config/application.rb`?
 - [ ] No `validates :content, presence: true` on `Message`?
-- [ ] All LLM calls happen inside a job, via `Chat::Replier` (main
-      chat) or an `Agent` (sub-domains)?
+- [ ] All LLM calls go through `Chat::Replier` (main chat, streamed by
+      `Chat::ReplyStream`) or an `Agent` (sub-domains)?
 - [ ] No new `Llm::Client`-style wrapper that just forwards to
       `acts_as_chat`?
-- [ ] Channel/controller has zero LLM logic?
+- [ ] Controller has zero LLM logic (it only hands `response.stream`
+      to `Chat::ReplyStream`)?
 - [ ] Streaming block guards against `chunk.content.blank?` before
-      broadcasting?
+      writing to the stream?
+- [ ] SSE stream closed in an `ensure`?
 - [ ] No mid-stream `Message#update!` of `content`?
 - [ ] Tools return primitives (`Hash`/`Array`/`String`), not AR
       objects?
@@ -298,8 +311,8 @@ refresh the `models` table.
       `rescue Exception`, never `rescue StandardError` swallowing
       everything silently?
 - [ ] Tests in place: model spec for AR side, tool spec for `#execute`
-      logic, job/channel spec for orchestration, **VCR cassette**
-      (with API key filter) for the actual LLM call?
+      logic, request/PORO spec for the SSE orchestration, **VCR
+      cassette** (with API key filter) for the actual LLM call?
 - [ ] 100% line + branch coverage on new/changed code (CLAUDE.md
       mandate)?
 - [ ] User-facing strings (descriptions visible to users, error
@@ -315,7 +328,8 @@ refresh the `models` table.
 
 - **Silent assistant-message destruction**: a failure inside `ask`
   destroys the placeholder assistant message. If you see "the message
-  disappeared", check for an exception swallowed in the job.
+  disappeared", check for an exception swallowed in the streaming
+  request.
 - **Tool execute kwargs not matching params**: `params do string :x
   end` requires `def execute(x:)`. Mismatch crashes at call time.
 - **Missing `provider:` with `assume_model_exists`**: required, or it
@@ -446,14 +460,13 @@ is the rendering complement.
 
 For the "Pensando..." UX during tool execution, `Chat::Replier`
 accepts an `on_tool_call:` keyword and registers it via
-`chat.on_tool_call(&on_tool_call)`. The job broadcasts
-`{ tool: tool_call.name }` over ActionCable and the Stimulus
+`chat.on_tool_call(&on_tool_call)`. `Chat::ReplyStream` writes
+`{ tool: tool_call.name }` as an SSE event and the Stimulus
 controller closes any pending bubble and re-shows the typing
 indicator.
 
 Do **not** poll the DB for tool-call state. The callback is
-authoritative and runs in the same job/process as the streaming
-loop.
+authoritative and runs in the same request as the streaming loop.
 
 ---
 
@@ -490,8 +503,8 @@ batched in a single request — always batch when you can.
   cross-compatible.
 - Index: `using: :hnsw, opclass: :vector_cosine_ops`. Don't bother
   with `ivfflat` for this scale.
-- **Multi-DB: vectors live only in `primary`.** Never in cache, queue,
-  or cable schemas.
+- **Multi-DB: vectors live only in `primary`.** Never in the cache
+  schema.
 
 ### Retrieval rules
 
