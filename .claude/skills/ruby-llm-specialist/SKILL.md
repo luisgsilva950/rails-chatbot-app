@@ -252,9 +252,12 @@ Customer Lookup). Each specialist has its own tools.
   `Chat::ReplyStream` (`ActionController::Live`).
 - Write `chunk.content` only when present (early chunks may carry
   metadata only).
-- Events are JSON over SSE (`{"chunk": ...}`, `{"tool": ...}`,
-  `{"done": true}`); SSE is ordered by design — no client-side
-  reordering needed.
+- Events are JSON over SSE (`{"thinking": ...}`, `{"chunk": ...}`,
+  `{"tool": ...}`, `{"done": true}`); SSE is ordered by design — no
+  client-side reordering needed.
+- Thinking is enabled via `with_thinking(budget:)` in `Chat::Replier`;
+  thought summaries arrive on `chunk.thinking&.text` and the full text
+  is persisted by `acts_as_chat` in `Message#thinking_text`.
 - Always close the response stream in an `ensure` — a leaked stream
   pins a Puma thread.
 - Don't update the message row mid-stream. The final upsert by

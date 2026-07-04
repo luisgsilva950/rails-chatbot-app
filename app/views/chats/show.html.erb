@@ -40,6 +40,15 @@
     </article>
   </template>
 
+  <template data-chat-target="thinkingTemplate">
+    <article class="message message--assistant message--thinking-block">
+      <details class="message__thinking" open>
+        <summary><%= t("chats.thinking") %></summary>
+        <div class="message__thinking-body"></div>
+      </details>
+    </article>
+  </template>
+
   <template data-chat-target="typingTemplate">
     <article class="message message--assistant message--typing" aria-label="<%= t("chats.typing") %>">
       <span class="message__avatar" aria-hidden="true">

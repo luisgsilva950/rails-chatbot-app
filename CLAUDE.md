@@ -229,8 +229,11 @@ When logic outgrows the model or controller, extract a PORO under
   stream in `ActionController::Live::SSE`, forwards content chunks and
   tool-call events from `Chat::Replier`, emits a final `done` event, and
   **always closes the stream** in an `ensure`.
-- Each event is a small JSON object: `{"chunk": "..."}`,
-  `{"tool": "..."}`, `{"done": true}`.
+- Each event is a small JSON object: `{"thinking": "..."}`,
+  `{"chunk": "..."}`, `{"tool": "..."}`, `{"done": true}`.
+- Thinking is enabled in `Chat::Replier` (`with_thinking`); thought
+  summaries stream as `thinking` events and are persisted by
+  `acts_as_chat` in `Message#thinking_text`.
 - The controller only creates the user message, sets the SSE headers
   (`Content-Type: text/event-stream`, `Cache-Control: no-cache`,
   `X-Accel-Buffering: no`), and hands `response.stream` to

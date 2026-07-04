@@ -10,7 +10,7 @@ import { setMarkdown } from "lib/markdown"
 export default class extends Controller {
   static targets = [
     "messages", "form", "input", "submitButton",
-    "userTemplate", "assistantTemplate", "typingTemplate"
+    "userTemplate", "assistantTemplate", "typingTemplate", "thinkingTemplate"
   ]
   static values = { url: String }
 
@@ -106,9 +106,35 @@ export default class extends Controller {
   }
 
   #onMessage(data) {
-    if (data.chunk) this.#appendChunk(data.chunk)
-    if (data.tool)  this.#onToolCall()
-    if (data.done)  this.#finalize()
+    if (data.thinking) this.#appendThinking(data.thinking)
+    if (data.chunk)    this.#appendChunk(data.chunk)
+    if (data.tool)     this.#onToolCall()
+    if (data.done)     this.#finalize()
+  }
+
+  // Streams the model's thought summary into an open <details> block.
+  // The block collapses as soon as the actual reply (or a tool call)
+  // starts, but stays available for the curious.
+  #appendThinking(text) {
+    this.#hideTyping()
+    let body = this.messagesTarget.querySelector("[data-thinking-pending] .message__thinking-body")
+    if (!body) body = this.#createThinkingBlock()
+    body.textContent += text
+    this.#scrollToBottom()
+  }
+
+  #createThinkingBlock() {
+    const node = this.thinkingTemplateTarget.content.firstElementChild.cloneNode(true)
+    node.setAttribute("data-thinking-pending", "true")
+    this.messagesTarget.appendChild(node)
+    return node.querySelector(".message__thinking-body")
+  }
+
+  #closeThinking() {
+    const pending = this.messagesTarget.querySelector("[data-thinking-pending]")
+    if (!pending) return
+    pending.removeAttribute("data-thinking-pending")
+    pending.querySelector("details")?.removeAttribute("open")
   }
 
   #appendUserMessage(text) {
@@ -122,6 +148,7 @@ export default class extends Controller {
 
   #appendChunk(text) {
     this.#hideTyping()
+    this.#closeThinking()
     let bubble = this.messagesTarget.querySelector("[data-pending] .message__bubble")
     if (!bubble) bubble = this.#createPendingBubble()
     const accumulated = (bubble.dataset.raw || "") + text
@@ -142,6 +169,7 @@ export default class extends Controller {
   // and re-show the typing indicator while the tool runs and the next
   // turn starts streaming.
   #onToolCall() {
+    this.#closeThinking()
     const pending = this.messagesTarget.querySelector("[data-pending]")
     pending?.removeAttribute("data-pending")
     this.#showTyping()
@@ -149,6 +177,7 @@ export default class extends Controller {
 
   #finalize() {
     this.#hideTyping()
+    this.#closeThinking()
     const bubble = this.messagesTarget.querySelector("[data-pending]")
     bubble?.removeAttribute("data-pending")
   }
