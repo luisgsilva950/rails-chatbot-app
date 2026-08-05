@@ -7,7 +7,7 @@ class InventoryAgent
 
   INSTRUCTIONS_TEMPLATE = <<~PROMPT.strip.freeze
     You are an inventory and stock specialist. Reply exclusively in
-    pt-BR, in a short and objective way.
+    English, in a short and objective way.
 
     Today is %<today>s. Whenever the user uses a relative date
     expression — e.g. "today", "yesterday", "tomorrow", "the day

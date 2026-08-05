@@ -2,7 +2,8 @@
 
 <section class="chat"
          data-controller="chat"
-         data-chat-url-value="<%= chat_messages_path(@chat) %>">
+         data-chat-url-value="<%= chat_messages_path(@chat) %>"
+         data-chat-other-placeholder-value="<%= t("chats.choices_placeholder") %>">
   <header class="chat-header">
     <%= link_to "←", chats_path, class: "chat-back", "aria-label": t("chats.title") %>
     <h1><%= t("chats.title") %></h1>
@@ -40,15 +41,6 @@
     </article>
   </template>
 
-  <template data-chat-target="thinkingTemplate">
-    <article class="message message--assistant message--thinking-block">
-      <details class="message__thinking" open>
-        <summary><%= t("chats.thinking") %></summary>
-        <div class="message__thinking-body"></div>
-      </details>
-    </article>
-  </template>
-
   <template data-chat-target="typingTemplate">
     <article class="message message--assistant message--typing" aria-label="<%= t("chats.typing") %>">
       <span class="message__avatar" aria-hidden="true">
@@ -57,6 +49,12 @@
       <div class="message__bubble"><span class="typing"><span></span><span></span><span></span></span></div>
     </article>
   </template>
+
+  <div class="chat-choices"
+       role="group"
+       aria-label="<%= t("chats.choices_label") %>"
+       data-chat-target="choices"
+       hidden></div>
 
   <form class="chat-form"
         data-chat-target="form"

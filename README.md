@@ -74,6 +74,30 @@ docker compose up --build
 
 Dev/test Postgres credentials: user `chatbot`, password `chatbot`.
 
+### Dev Container (VS Code / Cursor)
+
+No local Ruby needed — the container ships 3.4.2. Create a `.env` at the
+repo root (gitignored) with your key:
+
+```bash
+GEMINI_API_KEY=...
+RUBY_LLM_DEFAULT_MODEL=gemini-2.5-flash
+```
+
+Then **Dev Containers: Reopen in Container**. `.devcontainer/devcontainer.json`
+reuses `docker-compose.yml` — it builds `web` from `Dockerfile.dev` and
+starts `db` alongside it, so there's no second image to keep in sync.
+
+On first create it runs `bin/setup --skip-server` (gems + `db:prepare`).
+Start the server yourself from the integrated terminal:
+
+```bash
+bin/dev
+```
+
+The container idles rather than running Puma, so a crashed server leaves
+you with a working shell instead of a dead container.
+
 ---
 
 ## LLM configuration
@@ -132,8 +156,8 @@ Key rules (full details in [CLAUDE.md](CLAUDE.md)):
 - Controllers stay thin: create the message, hand the response stream
   to `Chat::ReplyStream`. No LLM logic inline.
 - Validations live on the model. Always.
-- User-facing strings are pt-BR via `t("...")` in
-  `config/locales/pt-BR.yml`.
+- User-facing strings are English via `t("...")` in
+  `config/locales/en.yml`.
 
 ---
 

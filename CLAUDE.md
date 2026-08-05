@@ -12,8 +12,9 @@ dashboard, no agents-with-tools layer. **One thing, done well.**
 
 **Tone:** clear, direct, helpful. The chatbot is a tool, not a personality.
 
-**Language:** all user-facing strings in **pt-BR**. All code, schema,
-identifiers, and commit messages in English. No exceptions.
+**Language:** everything in **English** — user-facing strings, code,
+schema, identifiers, and commit messages. Names that come from stored
+data (e.g. the service catalog) keep their original spelling.
 
 ---
 
@@ -229,11 +230,18 @@ When logic outgrows the model or controller, extract a PORO under
   stream in `ActionController::Live::SSE`, forwards content chunks and
   tool-call events from `Chat::Replier`, emits a final `done` event, and
   **always closes the stream** in an `ensure`.
-- Each event is a small JSON object: `{"thinking": "..."}`,
-  `{"chunk": "..."}`, `{"tool": "..."}`, `{"done": true}`.
-- Thinking is enabled in `Chat::Replier` (`with_thinking`); thought
-  summaries stream as `thinking` events and are persisted by
-  `acts_as_chat` in `Message#thinking_text`.
+- Plain reply events are untyped SSE (`data: {...}` on the default
+  `message` event): `{"chunk": "..."}`, `{"tool": "..."}`,
+  `{"done": true}`. This list is a contract with `chat_controller.js` —
+  adding a shape means touching both sides.
+- Interactive widgets stream on a separate named SSE event,
+  `event: ui`, discriminated by a `type` field in the payload — e.g.
+  `event: ui` / `data: {"type": "choices", "options": ["..."]}`. A new
+  widget adds a new `type`, not a new event name. `choices` carries
+  ready-made replies the model suggested by calling
+  `Ui::SuggestChoicesTool`; the browser renders them as clickable chips
+  and a pick comes back as an ordinary user message. See
+  `docs/adr/0001-model-suggested-choices-over-sse.md`.
 - The controller only creates the user message, sets the SSE headers
   (`Content-Type: text/event-stream`, `Cache-Control: no-cache`,
   `X-Accel-Buffering: no`), and hands `response.stream` to
@@ -287,7 +295,7 @@ tool — stop. The product doesn't need it.
   and writes each one as an SSE event. The full message is saved once on
   completion — never persist partial content mid-stream.
 - Errors are caught, logged (without prompt body), and surfaced to the
-  UI as a friendly pt-BR string.
+  UI as a friendly English string.
 - API keys live in **encrypted credentials** or environment variables.
   Never in source.
 
@@ -314,8 +322,8 @@ end
 ### Language
 
 - **All schema, code, and identifiers in English.**
-- **All user-facing strings in pt-BR via `t('…')`.** Never hardcode user
-  strings.
+- **All user-facing strings in English via `t('…')`.** Never hardcode
+  user strings.
 
 ### Schema
 
@@ -489,7 +497,7 @@ fix.
 ## i18n
 
 - Every user-facing string goes through `t("...")` and lives in
-  `config/locales/pt-BR.yml`.
+  `config/locales/en.yml`.
 - Tone: clear, direct, helpful. No forced legalese, no slang.
 - Keep keys nested by feature: `conversations.created`, `messages.failed`.
 
@@ -532,7 +540,7 @@ bin/rails console
 - [ ] Validations on the model — not in POROs / controllers?
 - [ ] LLM called only through `Chat::Replier` (main chat, streamed by
       `Chat::ReplyStream`) or an `Agent` (sub-domain)?
-- [ ] Strings in `pt-BR.yml`, accessed via `t(...)`?
+- [ ] Strings in `en.yml`, accessed via `t(...)`?
 - [ ] Request / PORO specs cover happy path + failure?
 - [ ] **100% line + branch coverage on new/changed code** (`simplecov`)?
 - [ ] No mocks for Active Record? VCR for the LLM provider only?
