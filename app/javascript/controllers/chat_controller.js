@@ -13,12 +13,13 @@ export default class extends Controller {
     "userTemplate", "assistantTemplate", "typingTemplate", "thinkingTemplate",
     "choices"
   ]
-  static values = { url: String, otherLabel: String }
+  static values = { url: String, otherPlaceholder: String }
 
   connect() {
     if (this.hasSubmitButtonTarget && !this.submitButtonTarget.dataset.defaultLabel) {
       this.submitButtonTarget.dataset.defaultLabel = this.submitButtonTarget.textContent.trim()
     }
+    this.inputTarget.dataset.defaultPlaceholder ||= this.inputTarget.placeholder
     this.#renderExistingMarkdown()
     this.#scrollToBottom()
   }
@@ -119,40 +120,31 @@ export default class extends Controller {
   }
 
   // Ready-made replies suggested by the model, docked just above the input.
-  // Clicking one sends it as an ordinary user message, so the rest of the
-  // flow is unchanged; "other" just steps out of the way of the text box.
+  // Clicking one sends it as an ordinary user message. There is no "other"
+  // button: the text box already is that option, so while the suggestions
+  // are up it says so in its placeholder.
   #appendChoices(options) {
     this.#hideTyping()
     this.#removeChoices()
     options.forEach((option) => this.choicesTarget.appendChild(this.#choiceButton(option)))
-    this.choicesTarget.appendChild(this.#otherButton())
     this.choicesTarget.hidden = false
+    this.inputTarget.placeholder = this.otherPlaceholderValue
     this.#scrollToBottom()
   }
 
   #choiceButton(option) {
-    return this.#button("choice", option, () => this.#send(option))
-  }
-
-  #otherButton() {
-    return this.#button("choice choice--other", this.otherLabelValue, () => {
-      this.#removeChoices()
-      this.inputTarget.focus()
-    })
-  }
-
-  #button(className, label, onClick) {
     const button = document.createElement("button")
     button.type = "button"
-    button.className = className
-    button.textContent = label
-    button.addEventListener("click", onClick)
+    button.className = "choice"
+    button.textContent = option
+    button.addEventListener("click", () => this.#send(option))
     return button
   }
 
   #removeChoices() {
     this.choicesTarget.replaceChildren()
     this.choicesTarget.hidden = true
+    this.inputTarget.placeholder = this.inputTarget.dataset.defaultPlaceholder
   }
 
   // Streams the model's thought summary into an open <details> block.

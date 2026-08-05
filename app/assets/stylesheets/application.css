@@ -373,18 +373,6 @@ html:has(.chat), body:has(.chat) { overflow: hidden; }
   outline-offset: 2px;
 }
 
-/* The escape hatch, not a suggestion — quieter than the real options. */
-.choice--other {
-  border-color: var(--border);
-  color: var(--muted);
-}
-
-.choice--other:hover {
-  background: var(--bg);
-  border-color: var(--muted);
-  color: var(--fg);
-}
-
 /* ─── Form ────────────────────────────────────────────────────────── */
 
 .chat-form {

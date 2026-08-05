@@ -1032,6 +1032,25 @@
         ],
         "branches": {}
       },
+      "/home/user/rails-chatbot-app/app/controllers/chats_controller.rb": {
+        "lines": [
+          1,
+          1,
+          2,
+          null,
+          null,
+          1,
+          1,
+          null,
+          null,
+          1,
+          1,
+          1,
+          null,
+          null
+        ],
+        "branches": {}
+      },
       "/home/user/rails-chatbot-app/app/controllers/messages_controller.rb": {
         "lines": [
           1,
@@ -1063,27 +1082,8 @@
           null
         ],
         "branches": {}
-      },
-      "/home/user/rails-chatbot-app/app/controllers/chats_controller.rb": {
-        "lines": [
-          1,
-          1,
-          2,
-          null,
-          null,
-          1,
-          1,
-          null,
-          null,
-          1,
-          1,
-          1,
-          null,
-          null
-        ],
-        "branches": {}
       }
     },
-    "timestamp": 1785892904
+    "timestamp": 1785893118
   }
 }

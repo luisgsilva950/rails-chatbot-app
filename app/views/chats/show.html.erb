@@ -3,7 +3,7 @@
 <section class="chat"
          data-controller="chat"
          data-chat-url-value="<%= chat_messages_path(@chat) %>"
-         data-chat-other-label-value="<%= t("chats.choices_other") %>">
+         data-chat-other-placeholder-value="<%= t("chats.choices_placeholder") %>">
   <header class="chat-header">
     <%= link_to "←", chats_path, class: "chat-back", "aria-label": t("chats.title") %>
     <h1><%= t("chats.title") %></h1>
