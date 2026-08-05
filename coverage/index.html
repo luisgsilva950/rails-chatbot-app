@@ -13,7 +13,7 @@
       <img src="./assets/0.13.2/loading.gif" alt="loading"/>
     </div>
     <div id="wrapper" class="hide">
-      <div class="timestamp">Generated <abbr class="timeago" title="2026-08-05T05:06:10+00:00">2026-08-05T05:06:10+00:00</abbr></div>
+      <div class="timestamp">Generated <abbr class="timeago" title="2026-08-05T05:10:22+00:00">2026-08-05T05:10:22+00:00</abbr></div>
       <ul class="group_tabs"></ul>
 
       <div id="content">
@@ -295,7 +295,7 @@
           <tr class="t-file">
             <td class="strong t-file__name"><a href="#07f114a7db85924ec1dfb82e4eca7c9eb398cde1" class="src_link" title="app/services/chat/replier.rb">app/services/chat/replier.rb</a></td>
             <td class="green strong cell--number t-file__coverage">100.00 %</td>
-            <td class="cell--number">122</td>
+            <td class="cell--number">130</td>
             <td class="cell--number">13</td>
             <td class="cell--number">13</td>
             <td class="cell--number">0</td>
@@ -1360,7 +1360,7 @@
           <tr class="t-file">
             <td class="strong t-file__name"><a href="#07f114a7db85924ec1dfb82e4eca7c9eb398cde1" class="src_link" title="app/services/chat/replier.rb">app/services/chat/replier.rb</a></td>
             <td class="green strong cell--number t-file__coverage">100.00 %</td>
-            <td class="cell--number">122</td>
+            <td class="cell--number">130</td>
             <td class="cell--number">13</td>
             <td class="cell--number">13</td>
             <td class="cell--number">0</td>
@@ -6620,7 +6620,7 @@
               
             
 
-            <code class="ruby">    - When your next step depends on the user picking from a small,</code>
+            <code class="ruby">    - Whenever you end a turn with a question whose answer is one of a</code>
           </li>
         </div>
       
@@ -6632,7 +6632,7 @@
               
             
 
-            <code class="ruby">      known set — a service, one of a few dates, a yes/no confirmation</code>
+            <code class="ruby">      small, known set — a service, a category, one of a few dates, a</code>
           </li>
         </div>
       
@@ -6644,7 +6644,7 @@
               
             
 
-            <code class="ruby">      — ask the question in your message and call</code>
+            <code class="ruby">      yes/no confirmation — you MUST call `ui--suggest_choices` in the</code>
           </li>
         </div>
       
@@ -6656,7 +6656,7 @@
               
             
 
-            <code class="ruby">      `ui--suggest_choices` with the options in the same turn.</code>
+            <code class="ruby">      same turn. Ending such a question without the buttons is a</code>
           </li>
         </div>
       
@@ -6668,7 +6668,7 @@
               
             
 
-            <code class="ruby">    - The interface draws the options as buttons, so never list them in</code>
+            <code class="ruby">      mistake, including right after a tool gave you the very list the</code>
           </li>
         </div>
       
@@ -6680,7 +6680,7 @@
               
             
 
-            <code class="ruby">      the message text as well, and never number them.</code>
+            <code class="ruby">      user has to choose from.</code>
           </li>
         </div>
       
@@ -6692,7 +6692,7 @@
               
             
 
-            <code class="ruby">    - That call ends your turn: say nothing after it and wait for the</code>
+            <code class="ruby">    - The interface draws the options as buttons, so never list them in</code>
           </li>
         </div>
       
@@ -6704,7 +6704,7 @@
               
             
 
-            <code class="ruby">      user&#39;s pick, which arrives as an ordinary message.</code>
+            <code class="ruby">      the message text as well, and never number them.</code>
           </li>
         </div>
       
@@ -6716,7 +6716,7 @@
               
             
 
-            <code class="ruby">    - Do not use it for open questions, or when the set of valid</code>
+            <code class="ruby">    - That call ends your turn: say nothing after it and wait for the</code>
           </li>
         </div>
       
@@ -6728,7 +6728,7 @@
               
             
 
-            <code class="ruby">      answers is long or unknown.</code>
+            <code class="ruby">      user&#39;s pick, which arrives as an ordinary message.</code>
           </li>
         </div>
       
@@ -6740,7 +6740,7 @@
               
             
 
-            <code class="ruby">    - Options must come from real data, never from memory. For services</code>
+            <code class="ruby">    - Options must come from real data, never from memory — for</code>
           </li>
         </div>
       
@@ -6752,7 +6752,7 @@
               
             
 
-            <code class="ruby">      that means the names returned by `scheduling--list_service_types`;</code>
+            <code class="ruby">      services, the names returned by `scheduling--list_service_types`.</code>
           </li>
         </div>
       
@@ -6764,7 +6764,7 @@
               
             
 
-            <code class="ruby">      when the catalog is longer than the buttons allow, offer the</code>
+            <code class="ruby">    - The full catalog is longer than the buttons allow, so never dump</code>
           </li>
         </div>
       
@@ -6776,7 +6776,7 @@
               
             
 
-            <code class="ruby">      closest few and say the full list is available on request, rather</code>
+            <code class="ruby">      it into your text. Narrow it in two steps instead: first offer the</code>
           </li>
         </div>
       
@@ -6788,7 +6788,7 @@
               
             
 
-            <code class="ruby">      than presenting a partial list as if it were everything.</code>
+            <code class="ruby">      categories as buttons (Lavagem, Detalhamento, Proteção, Interno),</code>
           </li>
         </div>
       
@@ -6800,7 +6800,7 @@
               
             
 
-            <code class="ruby">    - Never ask the user to type a date themselves or to follow a</code>
+            <code class="ruby">      then offer that category&#39;s services as buttons once the user</code>
           </li>
         </div>
       
@@ -6812,7 +6812,7 @@
               
             
 
-            <code class="ruby">      specific format (e.g. &quot;informe a data no formato YYYY-MM-DD&quot;).</code>
+            <code class="ruby">      picks. If a category ever holds more services than fit, still use</code>
           </li>
         </div>
       
@@ -6824,7 +6824,7 @@
               
             
 
-            <code class="ruby">      Work out a short list of concrete candidate dates yourself —</code>
+            <code class="ruby">      buttons: offer the most common ones and let the user ask for the</code>
           </li>
         </div>
       
@@ -6836,7 +6836,7 @@
               
             
 
-            <code class="ruby">      e.g. today, tomorrow, the next couple of business days — relative</code>
+            <code class="ruby">      rest.</code>
           </li>
         </div>
       
@@ -6848,7 +6848,7 @@
               
             
 
-            <code class="ruby">      to today&#39;s date, and offer them with `ui--suggest_choices` using</code>
+            <code class="ruby">    - Quote price and duration only for the few services actually under</code>
           </li>
         </div>
       
@@ -6860,7 +6860,7 @@
               
             
 
-            <code class="ruby">      short pt-BR labels (e.g. &quot;Hoje&quot;, &quot;Amanhã&quot;, &quot;Sexta-feira (17/01)&quot;).</code>
+            <code class="ruby">      discussion, never as a catalogue-wide table.</code>
           </li>
         </div>
       
@@ -6872,7 +6872,7 @@
               
             
 
-            <code class="ruby">  PROMPT</code>
+            <code class="ruby">    - Do not use it for open questions, or when the set of valid</code>
           </li>
         </div>
       
@@ -6884,7 +6884,7 @@
               
             
 
-            <code class="ruby"></code>
+            <code class="ruby">      answers is genuinely long or unknown.</code>
           </li>
         </div>
       
@@ -6896,12 +6896,108 @@
               
             
 
+            <code class="ruby">    - Never ask the user to type a date themselves or to follow a</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="90">
+            
+
+            
+              
+            
+
+            <code class="ruby">      specific format (e.g. &quot;informe a data no formato YYYY-MM-DD&quot;).</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="91">
+            
+
+            
+              
+            
+
+            <code class="ruby">      Work out a short list of concrete candidate dates yourself —</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="92">
+            
+
+            
+              
+            
+
+            <code class="ruby">      e.g. today, tomorrow, the next couple of business days — relative</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="93">
+            
+
+            
+              
+            
+
+            <code class="ruby">      to today&#39;s date, and offer them with `ui--suggest_choices` using</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="94">
+            
+
+            
+              
+            
+
+            <code class="ruby">      short pt-BR labels (e.g. &quot;Hoje&quot;, &quot;Amanhã&quot;, &quot;Sexta-feira (17/01)&quot;).</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="95">
+            
+
+            
+              
+            
+
+            <code class="ruby">  PROMPT</code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="96">
+            
+
+            
+              
+            
+
+            <code class="ruby"></code>
+          </li>
+        </div>
+      
+        <div>
+          <li class="never" data-hits="" data-linenumber="97">
+            
+
+            
+              
+            
+
             <code class="ruby">  DEFAULT_TOOLS = [</code>
           </li>
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="90">
+          <li class="covered" data-hits="1" data-linenumber="98">
             
               <span class="hits">1</span>
             
@@ -6915,7 +7011,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="91">
+          <li class="never" data-hits="" data-linenumber="99">
             
 
             
@@ -6927,7 +7023,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="92">
+          <li class="never" data-hits="" data-linenumber="100">
             
 
             
@@ -6939,7 +7035,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="93">
+          <li class="never" data-hits="" data-linenumber="101">
             
 
             
@@ -6951,7 +7047,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="94">
+          <li class="never" data-hits="" data-linenumber="102">
             
 
             
@@ -6963,7 +7059,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="95">
+          <li class="never" data-hits="" data-linenumber="103">
             
 
             
@@ -6975,7 +7071,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="96">
+          <li class="never" data-hits="" data-linenumber="104">
             
 
             
@@ -6987,7 +7083,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="97">
+          <li class="never" data-hits="" data-linenumber="105">
             
 
             
@@ -6999,7 +7095,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="98">
+          <li class="never" data-hits="" data-linenumber="106">
             
 
             
@@ -7011,7 +7107,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="99">
+          <li class="never" data-hits="" data-linenumber="107">
             
 
             
@@ -7023,7 +7119,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="100">
+          <li class="never" data-hits="" data-linenumber="108">
             
 
             
@@ -7035,7 +7131,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="101">
+          <li class="covered" data-hits="1" data-linenumber="109">
             
               <span class="hits">1</span>
             
@@ -7049,7 +7145,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="7" data-linenumber="102">
+          <li class="covered" data-hits="7" data-linenumber="110">
             
               <span class="hits">7</span>
             
@@ -7063,7 +7159,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="7" data-linenumber="103">
+          <li class="covered" data-hits="7" data-linenumber="111">
             
               <span class="hits">7</span>
             
@@ -7077,7 +7173,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="104">
+          <li class="never" data-hits="" data-linenumber="112">
             
 
             
@@ -7089,7 +7185,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="105">
+          <li class="never" data-hits="" data-linenumber="113">
             
 
             
@@ -7101,7 +7197,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="106">
+          <li class="covered" data-hits="1" data-linenumber="114">
             
               <span class="hits">1</span>
             
@@ -7115,7 +7211,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="7" data-linenumber="107">
+          <li class="covered" data-hits="7" data-linenumber="115">
             
               <span class="hits">7</span>
             
@@ -7137,7 +7233,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="108">
+          <li class="never" data-hits="" data-linenumber="116">
             
 
             
@@ -7149,7 +7245,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="6" data-linenumber="109">
+          <li class="covered" data-hits="6" data-linenumber="117">
             
               <span class="hits">6</span>
             
@@ -7171,7 +7267,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="6" data-linenumber="110">
+          <li class="covered" data-hits="6" data-linenumber="118">
             
               <span class="hits">6</span>
             
@@ -7185,7 +7281,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="111">
+          <li class="never" data-hits="" data-linenumber="119">
             
 
             
@@ -7197,7 +7293,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="112">
+          <li class="never" data-hits="" data-linenumber="120">
             
 
             
@@ -7209,7 +7305,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="113">
+          <li class="never" data-hits="" data-linenumber="121">
             
 
             
@@ -7221,7 +7317,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="114">
+          <li class="never" data-hits="" data-linenumber="122">
             
 
             
@@ -7233,7 +7329,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="115">
+          <li class="never" data-hits="" data-linenumber="123">
             
 
             
@@ -7245,7 +7341,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="116">
+          <li class="never" data-hits="" data-linenumber="124">
             
 
             
@@ -7257,7 +7353,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="117">
+          <li class="covered" data-hits="1" data-linenumber="125">
             
               <span class="hits">1</span>
             
@@ -7271,7 +7367,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="118">
+          <li class="never" data-hits="" data-linenumber="126">
             
 
             
@@ -7283,7 +7379,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="1" data-linenumber="119">
+          <li class="covered" data-hits="1" data-linenumber="127">
             
               <span class="hits">1</span>
             
@@ -7297,7 +7393,7 @@
         </div>
       
         <div>
-          <li class="covered" data-hits="6" data-linenumber="120">
+          <li class="covered" data-hits="6" data-linenumber="128">
             
               <span class="hits">6</span>
             
@@ -7311,7 +7407,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="121">
+          <li class="never" data-hits="" data-linenumber="129">
             
 
             
@@ -7323,7 +7419,7 @@
         </div>
       
         <div>
-          <li class="never" data-hits="" data-linenumber="122">
+          <li class="never" data-hits="" data-linenumber="130">
             
 
             
