@@ -58,6 +58,10 @@
     </article>
   </template>
 
+  <template data-chat-target="choicesTemplate">
+    <div class="choices" role="group" aria-label="<%= t("chats.choices_label") %>"></div>
+  </template>
+
   <form class="chat-form"
         data-chat-target="form"
         data-action="submit->chat#submit">

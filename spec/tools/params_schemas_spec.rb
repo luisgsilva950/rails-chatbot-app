@@ -16,7 +16,8 @@ RSpec.describe "Tool params schemas" do
     CashFlow::SalesDaysTool,
     CustomerLookup::FindCustomerByPhoneTool,
     Weather::ForecastTool,
-    Weather::AskAgentTool
+    Weather::AskAgentTool,
+    Ui::SuggestChoicesTool
   ]
 
   tool_classes.each do |klass|

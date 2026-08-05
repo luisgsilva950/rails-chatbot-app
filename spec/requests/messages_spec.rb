@@ -26,6 +26,25 @@ RSpec.describe "Messages", type: :request do
       expect(response.body).to eq("data: {\"chunk\":\"oi\"}\n\ndata: {\"done\":true}\n\n")
     end
 
+    it "streams the choices the model suggested so the UI can render them" do
+      tool_call = Struct.new(:name, :arguments)
+        .new(Chat::ReplyStream::CHOICES_TOOL, "options" => [ "Lavagem", "Polimento" ])
+      allow(chat).to receive(:on_tool_call) { |&callback| @on_tool_call = callback }
+      allow(chat).to receive(:complete) do |&on_chunk|
+        on_chunk.call(chunk_struct.new("Qual servico?", nil))
+        @on_tool_call.call(tool_call)
+      end
+
+      post chat_messages_path(chat), params: { message: { content: "quero agendar" } }
+
+      expect(response.body).to eq(
+        "data: {\"chunk\":\"Qual servico?\"}\n\n" \
+        "data: {\"tool\":\"ui--suggest_choices\"}\n\n" \
+        "data: {\"choices\":[\"Lavagem\",\"Polimento\"]}\n\n" \
+        "data: {\"done\":true}\n\n"
+      )
+    end
+
     it "still streams a done event when the LLM returned no chunks" do
       allow(chat).to receive(:complete)
 

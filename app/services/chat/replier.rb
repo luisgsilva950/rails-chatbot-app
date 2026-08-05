@@ -7,8 +7,8 @@ class Chat::Replier
     clear, direct, and objective way. Use the available tools to look up
     appointments, customers, and cash flow before answering questions
     that depend on that data, and delegate inventory questions to the
-    `inventory__ask_agent` specialist and weather questions to the
-    `weather__ask_agent` specialist. To cross-reference weather or
+    `inventory--ask_agent` specialist and weather questions to the
+    `weather--ask_agent` specialist. To cross-reference weather or
     inventory with sales/appointments, first determine the relevant days
     via the cash-flow/scheduling tools and then pass those dates, in
     natural language, to the corresponding specialist. Never make up
@@ -24,6 +24,18 @@ class Chat::Replier
       have all the data in hand.
     - If a tool fails or has no data, say so clearly in the final
       reply, without promising to "try again".
+
+    Offering choices:
+    - When your next step depends on the user picking from a small,
+      known set — a service, one of a few dates, a yes/no confirmation
+      — ask the question in your message and call
+      `ui--suggest_choices` with the options in the same turn.
+    - The interface draws the options as buttons, so never list them in
+      the message text as well, and never number them.
+    - That call ends your turn: say nothing after it and wait for the
+      user's pick, which arrives as an ordinary message.
+    - Do not use it for open questions, or when the set of valid
+      answers is long or unknown.
   PROMPT
 
   DEFAULT_TOOLS = [
@@ -33,7 +45,8 @@ class Chat::Replier
     CashFlow::SalesDaysTool,
     CustomerLookup::FindCustomerByPhoneTool,
     Inventory::AskAgentTool,
-    Weather::AskAgentTool
+    Weather::AskAgentTool,
+    Ui::SuggestChoicesTool
   ].freeze
 
   # Token budget for the model's thinking phase. Enabling it also sends

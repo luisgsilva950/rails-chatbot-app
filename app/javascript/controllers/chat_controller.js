@@ -10,7 +10,8 @@ import { setMarkdown } from "lib/markdown"
 export default class extends Controller {
   static targets = [
     "messages", "form", "input", "submitButton",
-    "userTemplate", "assistantTemplate", "typingTemplate", "thinkingTemplate"
+    "userTemplate", "assistantTemplate", "typingTemplate", "thinkingTemplate",
+    "choicesTemplate"
   ]
   static values = { url: String }
 
@@ -35,9 +36,13 @@ export default class extends Controller {
 
   async submit(event) {
     event.preventDefault()
-    const content = this.inputTarget.value.trim()
+    await this.#send(this.inputTarget.value.trim())
+  }
+
+  async #send(content) {
     if (!content) return
 
+    this.#removeChoices()
     this.#removeEmptyState()
     this.#appendUserMessage(content)
     this.#showTyping()
@@ -109,7 +114,32 @@ export default class extends Controller {
     if (data.thinking) this.#appendThinking(data.thinking)
     if (data.chunk)    this.#appendChunk(data.chunk)
     if (data.tool)     this.#onToolCall()
+    if (data.choices)  this.#appendChoices(data.choices)
     if (data.done)     this.#finalize()
+  }
+
+  // Ready-made replies suggested by the model. Clicking one sends it as an
+  // ordinary user message, so the rest of the flow is unchanged.
+  #appendChoices(options) {
+    this.#hideTyping()
+    this.#removeChoices()
+    const node = this.choicesTemplateTarget.content.firstElementChild.cloneNode(true)
+    options.forEach((option) => node.appendChild(this.#choiceButton(option)))
+    this.messagesTarget.appendChild(node)
+    this.#scrollToBottom()
+  }
+
+  #choiceButton(option) {
+    const button = document.createElement("button")
+    button.type = "button"
+    button.className = "choice"
+    button.textContent = option
+    button.addEventListener("click", () => this.#send(option))
+    return button
+  }
+
+  #removeChoices() {
+    this.messagesTarget.querySelector(".choices")?.remove()
   }
 
   // Streams the model's thought summary into an open <details> block.

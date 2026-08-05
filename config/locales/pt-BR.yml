@@ -9,6 +9,7 @@ pt-BR:
     sending: "Enviando…"
     typing: "Assistente está digitando…"
     thinking: "Pensando…"
+    choices_label: "Sugestões de resposta"
     error: "Não foi possível enviar a mensagem. Tente novamente."
     empty_messages: "Faça uma pergunta para começar."
   messages:

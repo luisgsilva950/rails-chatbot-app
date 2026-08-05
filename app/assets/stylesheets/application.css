@@ -331,6 +331,42 @@ html:has(.chat), body:has(.chat) { overflow: hidden; }
   margin: 0.25rem 0;
 }
 
+/* ─── Choices ─────────────────────────────────────────────────────── */
+
+.choices {
+  align-self: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  /* 28px avatar + the .message column gap, so the chips line up with the
+     assistant's bubble rather than with its avatar. */
+  margin-left: 36px;
+  max-width: 85%;
+  animation: message-in 140ms ease-out;
+}
+
+.choice {
+  background: var(--surface);
+  border: 1px solid var(--primary);
+  border-radius: 999px;
+  color: var(--primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  padding: 0.4rem 0.85rem;
+}
+
+.choice:hover {
+  background: var(--primary);
+  color: var(--primary-fg);
+}
+
+.choice:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
 /* ─── Form ────────────────────────────────────────────────────────── */
 
 .chat-form {
