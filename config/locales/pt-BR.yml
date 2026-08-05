@@ -8,13 +8,11 @@ pt-BR:
     send: "Enviar"
     sending: "Enviando…"
     typing: "Assistente está digitando…"
-    thinking: "Pensando…"
     choices_label: "Sugestões de resposta"
     choices_placeholder: "Ou digite outra resposta…"
     error: "Não foi possível enviar a mensagem. Tente novamente."
     empty_messages: "Faça uma pergunta para começar."
   messages:
-    thinking: "Raciocínio"
     role:
       user: "Você"
       assistant: "Assistente"

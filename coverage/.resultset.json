@@ -1,7 +1,7 @@
 {
   "RSpec": {
     "coverage": {
-      "/home/user/rails-chatbot-app/app/agents/inventory_agent.rb": {
+      "/rails/app/agents/inventory_agent.rb": {
         "lines": [
           1,
           null,
@@ -66,7 +66,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/tools/inventory/products_consumed_on_dates_tool.rb": {
+      "/rails/app/tools/inventory/products_consumed_on_dates_tool.rb": {
         "lines": [
           1,
           1,
@@ -141,7 +141,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/tools/inventory/low_stock_products_tool.rb": {
+      "/rails/app/tools/inventory/low_stock_products_tool.rb": {
         "lines": [
           1,
           1,
@@ -175,7 +175,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/tools/inventory/product_lookup_tool.rb": {
+      "/rails/app/tools/inventory/product_lookup_tool.rb": {
         "lines": [
           1,
           1,
@@ -208,7 +208,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/agents/weather_agent.rb": {
+      "/rails/app/agents/weather_agent.rb": {
         "lines": [
           null,
           null,
@@ -264,49 +264,16 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/services/chat/replier.rb": {
+      "/rails/app/services/chat/replier.rb": {
         "lines": [
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
           1,
-          1,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
-          null,
           1,
           null,
           null,
@@ -320,7 +287,84 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           1,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           null,
           1,
           7,
@@ -332,6 +376,52 @@
           null,
           6,
           6,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          1,
+          null,
+          1,
+          6,
+          null,
+          null
+        ],
+        "branches": {
+          "[:unless, 0, 107, 4, 107, 59]": {
+            "[:else, 1, 107, 4, 107, 59]": 6,
+            "[:then, 2, 107, 4, 107, 10]": 1
+          },
+          "[:if, 3, 109, 4, 109, 52]": {
+            "[:then, 4, 109, 4, 109, 36]": 4,
+            "[:else, 5, 109, 4, 109, 52]": 2
+          }
+        }
+      },
+      "/rails/app/tools/scheduling/list_service_types_tool.rb": {
+        "lines": [
+          1,
+          1,
+          null,
+          1,
+          1,
+          null,
+          null,
+          null,
+          null,
+          1,
+          2,
+          2,
+          5,
+          null,
+          null,
+          1,
+          null,
+          1,
+          null,
+          3,
           null,
           null,
           null,
@@ -341,17 +431,13 @@
           null
         ],
         "branches": {
-          "[:unless, 0, 63, 4, 63, 59]": {
-            "[:else, 1, 63, 4, 63, 59]": 6,
-            "[:then, 2, 63, 4, 63, 10]": 1
-          },
-          "[:if, 3, 65, 4, 65, 52]": {
-            "[:then, 4, 65, 4, 65, 36]": 4,
-            "[:else, 5, 65, 4, 65, 52]": 2
+          "[:if, 0, 12, 4, 12, 64]": {
+            "[:then, 1, 12, 4, 12, 43]": 1,
+            "[:else, 2, 12, 4, 12, 64]": 1
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/tools/scheduling/list_appointments_for_date_tool.rb": {
+      "/rails/app/tools/scheduling/list_appointments_for_date_tool.rb": {
         "lines": [
           1,
           1,
@@ -402,7 +488,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/tools/scheduling/upcoming_appointments_tool.rb": {
+      "/rails/app/tools/scheduling/upcoming_appointments_tool.rb": {
         "lines": [
           1,
           1,
@@ -429,7 +515,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/tools/cash_flow/daily_revenue_tool.rb": {
+      "/rails/app/tools/cash_flow/daily_revenue_tool.rb": {
         "lines": [
           1,
           1,
@@ -472,7 +558,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/tools/cash_flow/sales_days_tool.rb": {
+      "/rails/app/tools/cash_flow/sales_days_tool.rb": {
         "lines": [
           1,
           1,
@@ -528,7 +614,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/tools/customer_lookup/find_customer_by_phone_tool.rb": {
+      "/rails/app/tools/customer_lookup/find_customer_by_phone_tool.rb": {
         "lines": [
           1,
           1,
@@ -565,7 +651,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/tools/inventory/ask_agent_tool.rb": {
+      "/rails/app/tools/inventory/ask_agent_tool.rb": {
         "lines": [
           null,
           null,
@@ -593,7 +679,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/tools/weather/ask_agent_tool.rb": {
+      "/rails/app/tools/weather/ask_agent_tool.rb": {
         "lines": [
           null,
           null,
@@ -621,7 +707,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/tools/ui/suggest_choices_tool.rb": {
+      "/rails/app/tools/ui/suggest_choices_tool.rb": {
         "lines": [
           null,
           null,
@@ -666,7 +752,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/services/chat/reply_stream.rb": {
+      "/rails/app/services/chat/reply_stream.rb": {
         "lines": [
           null,
           null,
@@ -676,23 +762,29 @@
           null,
           1,
           null,
-          1,
-          9,
+          null,
+          null,
           null,
           null,
           1,
-          9,
-          9,
+          null,
+          1,
           8,
           null,
-          9,
+          null,
+          1,
+          8,
+          8,
+          7,
+          null,
+          8,
           null,
           null,
           1,
           null,
           1,
-          13,
-          17,
+          12,
+          14,
           null,
           null,
           null,
@@ -708,37 +800,30 @@
           3,
           3,
           null,
+          2,
+          null,
           null,
           1,
-          8,
-          8,
+          6,
           null,
           null
         ],
         "branches": {
-          "[:unless, 0, 32, 4, 32, 48]": {
-            "[:else, 1, 32, 4, 32, 48]": 3,
-            "[:then, 2, 32, 4, 32, 10]": 1
+          "[:unless, 0, 38, 4, 38, 48]": {
+            "[:else, 1, 38, 4, 38, 48]": 3,
+            "[:then, 2, 38, 4, 38, 10]": 1
           },
-          "[:if, 3, 39, 4, 39, 53]": {
-            "[:then, 4, 39, 4, 39, 34]": 2,
-            "[:else, 5, 39, 4, 39, 53]": 1
+          "[:if, 3, 45, 4, 45, 31]": {
+            "[:then, 4, 45, 4, 45, 10]": 1,
+            "[:else, 5, 45, 4, 45, 31]": 2
           },
-          "[:\"&.\", 6, 43, 48, 43, 68]": {
-            "[:then, 7, 43, 48, 43, 68]": 2,
-            "[:else, 8, 43, 48, 43, 68]": 6
-          },
-          "[:if, 9, 43, 4, 43, 77]": {
-            "[:then, 10, 43, 4, 43, 44]": 1,
-            "[:else, 11, 43, 4, 43, 77]": 7
-          },
-          "[:if, 12, 44, 4, 44, 61]": {
-            "[:then, 13, 44, 4, 44, 35]": 5,
-            "[:else, 14, 44, 4, 44, 61]": 3
+          "[:if, 6, 51, 4, 51, 61]": {
+            "[:then, 7, 51, 4, 51, 35]": 4,
+            "[:else, 8, 51, 4, 51, 61]": 2
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/services/llm/timing_middleware.rb": {
+      "/rails/app/services/llm/timing_middleware.rb": {
         "lines": [
           null,
           null,
@@ -774,7 +859,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/services/weather/mock.rb": {
+      "/rails/app/services/weather/mock.rb": {
         "lines": [
           null,
           null,
@@ -837,7 +922,7 @@
           }
         }
       },
-      "/home/user/rails-chatbot-app/app/tools/weather/forecast_tool.rb": {
+      "/rails/app/tools/weather/forecast_tool.rb": {
         "lines": [
           1,
           1,
@@ -864,7 +949,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/models/payment.rb": {
+      "/rails/app/models/payment.rb": {
         "lines": [
           1,
           1,
@@ -884,7 +969,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/models/stock_movement.rb": {
+      "/rails/app/models/stock_movement.rb": {
         "lines": [
           1,
           1,
@@ -900,7 +985,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/models/appointment_photo.rb": {
+      "/rails/app/models/appointment_photo.rb": {
         "lines": [
           1,
           1,
@@ -915,7 +1000,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/models/appointment.rb": {
+      "/rails/app/models/appointment.rb": {
         "lines": [
           1,
           1,
@@ -941,7 +1026,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/models/vehicle.rb": {
+      "/rails/app/models/vehicle.rb": {
         "lines": [
           1,
           1,
@@ -959,7 +1044,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/models/customer.rb": {
+      "/rails/app/models/customer.rb": {
         "lines": [
           1,
           1,
@@ -975,7 +1060,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/models/product.rb": {
+      "/rails/app/models/product.rb": {
         "lines": [
           1,
           1,
@@ -998,7 +1083,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/models/service_type.rb": {
+      "/rails/app/models/service_type.rb": {
         "lines": [
           1,
           1,
@@ -1015,7 +1100,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/models/employee.rb": {
+      "/rails/app/models/employee.rb": {
         "lines": [
           1,
           1,
@@ -1032,7 +1117,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/controllers/chats_controller.rb": {
+      "/rails/app/controllers/chats_controller.rb": {
         "lines": [
           1,
           1,
@@ -1051,7 +1136,7 @@
         ],
         "branches": {}
       },
-      "/home/user/rails-chatbot-app/app/controllers/messages_controller.rb": {
+      "/rails/app/controllers/messages_controller.rb": {
         "lines": [
           1,
           1,
@@ -1084,6 +1169,6 @@
         "branches": {}
       }
     },
-    "timestamp": 1785893118
+    "timestamp": 1785906370
   }
 }

@@ -6,8 +6,7 @@ RSpec.describe Chat::ReplyStream do
   let(:chat) { Chat.create! }
   let(:replier) { instance_double(Chat::Replier) }
   let(:io) { StringIO.new }
-  let(:chunk_struct) { Struct.new(:content, :thinking) }
-  let(:thinking_struct) { Struct.new(:text) }
+  let(:chunk_struct) { Struct.new(:content) }
   let(:tool_call_struct) { Struct.new(:name, :arguments) }
 
   def tool_call(name, arguments = {})
@@ -16,25 +15,13 @@ RSpec.describe Chat::ReplyStream do
 
   it "writes content chunks, skips blank ones, and finishes with done" do
     allow(replier).to receive(:call) do |_chat, on_tool_call:, &on_chunk|
-      on_chunk.call(chunk_struct.new("", nil))
-      on_chunk.call(chunk_struct.new("oi", nil))
+      on_chunk.call(chunk_struct.new(""))
+      on_chunk.call(chunk_struct.new("oi"))
     end
 
     reply_stream.call(chat, io)
 
     expect(io.string).to eq("data: {\"chunk\":\"oi\"}\n\ndata: {\"done\":true}\n\n")
-  end
-
-  it "writes thinking events before the content they precede" do
-    allow(replier).to receive(:call) do |_chat, on_tool_call:, &on_chunk|
-      on_chunk.call(chunk_struct.new("", thinking_struct.new("hum")))
-      on_chunk.call(chunk_struct.new("oi", thinking_struct.new("")))
-    end
-
-    reply_stream.call(chat, io)
-
-    expect(io.string)
-      .to eq("data: {\"thinking\":\"hum\"}\n\ndata: {\"chunk\":\"oi\"}\n\ndata: {\"done\":true}\n\n")
   end
 
   it "writes a tool event when the assistant invokes a tool" do
@@ -49,7 +36,7 @@ RSpec.describe Chat::ReplyStream do
 
   it "writes a choices event with the options the model suggested" do
     allow(replier).to receive(:call) do |_chat, on_tool_call:, &on_chunk|
-      on_chunk.call(chunk_struct.new("Qual serviço?", nil))
+      on_chunk.call(chunk_struct.new("Qual serviço?"))
       on_tool_call.call(tool_call(described_class::CHOICES_TOOL, "options" => [ "Lavagem", " Polimento " ]))
     end
 
@@ -58,7 +45,7 @@ RSpec.describe Chat::ReplyStream do
     expect(io.string).to eq(
       "data: {\"chunk\":\"Qual serviço?\"}\n\n" \
       "data: {\"tool\":\"#{described_class::CHOICES_TOOL}\"}\n\n" \
-      "data: {\"choices\":[\"Lavagem\",\"Polimento\"]}\n\n" \
+      "event: ui\ndata: {\"type\":\"choices\",\"options\":[\"Lavagem\",\"Polimento\"]}\n\n" \
       "data: {\"done\":true}\n\n"
     )
   end

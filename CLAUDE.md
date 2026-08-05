@@ -229,17 +229,18 @@ When logic outgrows the model or controller, extract a PORO under
   stream in `ActionController::Live::SSE`, forwards content chunks and
   tool-call events from `Chat::Replier`, emits a final `done` event, and
   **always closes the stream** in an `ensure`.
-- Each event is a small JSON object: `{"thinking": "..."}`,
-  `{"chunk": "..."}`, `{"tool": "..."}`, `{"choices": ["..."]}`,
+- Plain reply events are untyped SSE (`data: {...}` on the default
+  `message` event): `{"chunk": "..."}`, `{"tool": "..."}`,
   `{"done": true}`. This list is a contract with `chat_controller.js` —
   adding a shape means touching both sides.
-- `choices` carries ready-made replies the model suggested by calling
+- Interactive widgets stream on a separate named SSE event,
+  `event: ui`, discriminated by a `type` field in the payload — e.g.
+  `event: ui` / `data: {"type": "choices", "options": ["..."]}`. A new
+  widget adds a new `type`, not a new event name. `choices` carries
+  ready-made replies the model suggested by calling
   `Ui::SuggestChoicesTool`; the browser renders them as clickable chips
   and a pick comes back as an ordinary user message. See
   `docs/adr/0001-model-suggested-choices-over-sse.md`.
-- Thinking is enabled in `Chat::Replier` (`with_thinking`); thought
-  summaries stream as `thinking` events and are persisted by
-  `acts_as_chat` in `Message#thinking_text`.
 - The controller only creates the user message, sets the SSE headers
   (`Content-Type: text/event-stream`, `Cache-Control: no-cache`,
   `X-Accel-Buffering: no`), and hands `response.stream` to

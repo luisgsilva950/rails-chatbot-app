@@ -1,5 +1,5 @@
 class Scheduling::UpcomingAppointmentsTool < RubyLLM::Tool
-  description "Returns the next open appointments, ordered by date."
+  description "Returns the next appointments ALREADY BOOKED (status scheduled or in_progress), soonest first, across all dates. These are taken slots, not free ones — this is not an availability check. Use it for questions like what is coming up next or what the shop's agenda looks like from now on."
 
   params do
     integer :limit, required: false,

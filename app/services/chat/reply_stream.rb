@@ -6,6 +6,12 @@ class Chat::ReplyStream
   # the two together so a rename cannot silently break the choices event.
   CHOICES_TOOL = "ui--suggest_choices".freeze
 
+  # SSE event name for interactive widgets, as opposed to the default
+  # "message" event used for chunk/tool/done. Payloads are discriminated
+  # by a `type` field, so future widgets add a new `type` instead of a
+  # new event name.
+  UI_EVENT = "ui".freeze
+
   def initialize(replier: Chat::Replier.new)
     @replier = replier
   end
@@ -36,11 +42,12 @@ class Chat::ReplyStream
 
   def write_choices(sse, options)
     normalized = Ui::SuggestChoicesTool.normalize(options)
-    sse.write(choices: normalized) if normalized.any?
+    return if normalized.empty?
+
+    sse.write({ type: "choices", options: normalized }, event: UI_EVENT)
   end
 
   def write_chunk(sse, chunk)
-    sse.write(thinking: chunk.thinking.text) if chunk.thinking&.text.present?
     sse.write(chunk: chunk.content) if chunk.content.present?
   end
 end

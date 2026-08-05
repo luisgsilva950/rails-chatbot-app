@@ -6,6 +6,7 @@ require "rails_helper"
 # and brings the DSL lines under coverage.
 RSpec.describe "Tool params schemas" do
   tool_classes = [
+    Scheduling::ListServiceTypesTool,
     Scheduling::ListAppointmentsForDateTool,
     Scheduling::UpcomingAppointmentsTool,
     Inventory::LowStockProductsTool,

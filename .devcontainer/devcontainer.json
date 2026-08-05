@@ -1,0 +1,51 @@
+// Dev Container for rails-chatbot-app.
+//
+// It deliberately reuses the existing dev stack instead of defining a
+// second image: ../docker-compose.yml builds `web` from Dockerfile.dev
+// (Ruby 3.4.2) and boots `db` (Postgres 16) as its dependency.
+{
+  "name": "rails-chatbot-app",
+
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "web",
+  "runServices": ["db", "web"],
+
+  // Matches WORKDIR in Dockerfile.dev and the `.:/rails` bind mount.
+  "workspaceFolder": "/rails",
+
+  // Idle the container instead of running the compose `bin/rails server`
+  // command, so Puma is started and restarted from the terminal with
+  // bin/dev and a crash never takes the container down with it.
+  "overrideCommand": true,
+
+  // Dockerfile.dev creates no non-root user.
+  "remoteUser": "root",
+
+  "shutdownAction": "stopCompose",
+
+  "forwardPorts": [3000, 5432],
+  "portsAttributes": {
+    "3000": { "label": "Rails (Puma)", "onAutoForward": "notify" },
+    "5432": { "label": "PostgreSQL", "onAutoForward": "silent" }
+  },
+
+  // Idempotent: bundle check/install, db:prepare, clear logs and tmp.
+  // --skip-server leaves the terminal free for bin/dev.
+  "postCreateCommand": "bin/setup --skip-server",
+
+  "customizations": {
+    "vscode": {
+      "extensions": ["Shopify.ruby-lsp"],
+      "settings": {
+        "rubyLsp.formatter": "rubocop",
+        "rubyLsp.linters": ["rubocop"],
+        "[ruby]": {
+          "editor.defaultFormatter": "Shopify.ruby-lsp",
+          "editor.formatOnSave": true
+        },
+        "files.associations": { "*.html.erb": "erb" },
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}

@@ -98,6 +98,32 @@ after them, so `Chat::ReplyStream` needs no buffering to get the order right.
   string against `Chat::ReplyStream::CHOICES_TOOL` so a rename cannot silently
   break the event.
 
+## Update — 2026-08-05: `choices` moved to a named `ui` event
+
+The wire shape above (`data: {"choices": [...]}` on the default `message`
+event) discriminated every event type by JSON key, mixed in with the plain
+reply stream. That doesn't scale to a second widget: each one would need its
+own top-level key, and the frontend would keep guessing "is this a reply
+event or a widget event" from key names alone.
+
+`choices` now streams on a separate named SSE event, so widgets are
+structurally distinct from the reply stream from the first byte:
+
+```
+event: ui
+data: {"type":"choices","options":["Lavagem simples","Polimento","Higienização interna"]}
+```
+
+`Chat::ReplyStream::UI_EVENT` ("ui") is the event name; `type` inside the
+payload picks the widget. The next interactive element (e.g. a date picker)
+adds a new `type`, not a new event name — `chat_controller.js` already
+branches on `event` before touching `data`.
+
+The `thinking` event shown in the original protocol sketch above is also
+gone: `with_thinking` was dropped from `Chat::Replier`, so thought summaries
+no longer stream or render. The live protocol is `chunk` / `tool` / `done`
+on the default event, plus `event: ui` for widgets.
+
 ## Deliberately not done
 
 - **Re-rendering unanswered chips after a reload.** `acts_as_chat` already

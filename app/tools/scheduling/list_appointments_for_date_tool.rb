@@ -1,5 +1,5 @@
 class Scheduling::ListAppointmentsForDateTool < RubyLLM::Tool
-  description "Lists detailing-shop appointments for a specific date."
+  description "Lists the appointments ALREADY BOOKED for one date — the shop's agenda for that day, i.e. the slots that are taken. It does NOT return free slots and it is not an availability check: a date with many bookings is a busy day, not a full one, and a date with none is an empty agenda, not a closed shop. Use it to answer what is scheduled for a day, for whom, and for which service."
 
   params do
     string :date, description: "Date in YYYY-MM-DD format. Defaults to today."

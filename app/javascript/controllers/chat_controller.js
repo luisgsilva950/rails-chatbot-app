@@ -10,7 +10,7 @@ import { setMarkdown } from "lib/markdown"
 export default class extends Controller {
   static targets = [
     "messages", "form", "input", "submitButton",
-    "userTemplate", "assistantTemplate", "typingTemplate", "thinkingTemplate",
+    "userTemplate", "assistantTemplate", "typingTemplate",
     "choices"
   ]
   static values = { url: String, otherPlaceholder: String }
@@ -103,20 +103,29 @@ export default class extends Controller {
   }
 
   #dispatchEvent(rawEvent) {
-    const data = rawEvent
-      .split("\n")
+    const lines = rawEvent.split("\n")
+    const eventLine = lines.find((line) => line.startsWith("event:"))
+    const event = eventLine ? eventLine.slice(6).trim() : "message"
+    const data = lines
       .filter((line) => line.startsWith("data:"))
       .map((line) => line.slice(5).trim())
       .join("\n")
-    if (data) this.#onMessage(JSON.parse(data))
+    if (!data) return
+    if (event === "ui") this.#onUi(JSON.parse(data))
+    else this.#onMessage(JSON.parse(data))
   }
 
   #onMessage(data) {
-    if (data.thinking) this.#appendThinking(data.thinking)
-    if (data.chunk)    this.#appendChunk(data.chunk)
-    if (data.tool)     this.#onToolCall()
-    if (data.choices)  this.#appendChoices(data.choices)
-    if (data.done)     this.#finalize()
+    if (data.chunk) this.#appendChunk(data.chunk)
+    if (data.tool)  this.#onToolCall()
+    if (data.done)  this.#finalize()
+  }
+
+  // Interactive widgets the model requested, distinct from the plain
+  // message stream. Each `type` is a different widget; today only
+  // "choices" exists.
+  #onUi(data) {
+    if (data.type === "choices") this.#appendChoices(data.options)
   }
 
   // Ready-made replies suggested by the model, docked just above the input.
@@ -147,31 +156,6 @@ export default class extends Controller {
     this.inputTarget.placeholder = this.inputTarget.dataset.defaultPlaceholder
   }
 
-  // Streams the model's thought summary into an open <details> block.
-  // The block collapses as soon as the actual reply (or a tool call)
-  // starts, but stays available for the curious.
-  #appendThinking(text) {
-    this.#hideTyping()
-    let body = this.messagesTarget.querySelector("[data-thinking-pending] .message__thinking-body")
-    if (!body) body = this.#createThinkingBlock()
-    body.textContent += text
-    this.#scrollToBottom()
-  }
-
-  #createThinkingBlock() {
-    const node = this.thinkingTemplateTarget.content.firstElementChild.cloneNode(true)
-    node.setAttribute("data-thinking-pending", "true")
-    this.messagesTarget.appendChild(node)
-    return node.querySelector(".message__thinking-body")
-  }
-
-  #closeThinking() {
-    const pending = this.messagesTarget.querySelector("[data-thinking-pending]")
-    if (!pending) return
-    pending.removeAttribute("data-thinking-pending")
-    pending.querySelector("details")?.removeAttribute("open")
-  }
-
   #appendUserMessage(text) {
     const node = this.userTemplateTarget.content.firstElementChild.cloneNode(true)
     const bubble = node.querySelector(".message__bubble")
@@ -183,7 +167,6 @@ export default class extends Controller {
 
   #appendChunk(text) {
     this.#hideTyping()
-    this.#closeThinking()
     let bubble = this.messagesTarget.querySelector("[data-pending] .message__bubble")
     if (!bubble) bubble = this.#createPendingBubble()
     const accumulated = (bubble.dataset.raw || "") + text
@@ -204,7 +187,6 @@ export default class extends Controller {
   // and re-show the typing indicator while the tool runs and the next
   // turn starts streaming.
   #onToolCall() {
-    this.#closeThinking()
     const pending = this.messagesTarget.querySelector("[data-pending]")
     pending?.removeAttribute("data-pending")
     this.#showTyping()
@@ -212,7 +194,6 @@ export default class extends Controller {
 
   #finalize() {
     this.#hideTyping()
-    this.#closeThinking()
     const bubble = this.messagesTarget.querySelector("[data-pending]")
     bubble?.removeAttribute("data-pending")
   }

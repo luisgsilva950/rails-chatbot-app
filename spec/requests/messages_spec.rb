@@ -2,20 +2,20 @@ require "rails_helper"
 
 RSpec.describe "Messages", type: :request do
   let(:chat) { Chat.create! }
-  let(:chunk_struct) { Struct.new(:content, :thinking) }
+  let(:chunk_struct) { Struct.new(:content) }
 
   before do
     allow(Chat).to receive(:find).with(chat.id.to_s).and_return(chat)
     allow(chat).to receive_messages(
-      with_model: chat, with_instructions: chat, with_tools: chat, with_thinking: chat
+      with_model: chat, with_instructions: chat, with_tools: chat
     )
   end
 
   describe "POST /chats/:chat_id/messages" do
     it "creates the user message and streams the reply as Server-Sent Events" do
       allow(chat).to receive(:complete)
-        .and_yield(chunk_struct.new("", nil))
-        .and_yield(chunk_struct.new("oi", nil))
+        .and_yield(chunk_struct.new(""))
+        .and_yield(chunk_struct.new("oi"))
 
       expect {
         post chat_messages_path(chat), params: { message: { content: "Olá" } }
@@ -31,7 +31,7 @@ RSpec.describe "Messages", type: :request do
         .new(Chat::ReplyStream::CHOICES_TOOL, "options" => [ "Lavagem", "Polimento" ])
       allow(chat).to receive(:on_tool_call) { |&callback| @on_tool_call = callback }
       allow(chat).to receive(:complete) do |&on_chunk|
-        on_chunk.call(chunk_struct.new("Qual servico?", nil))
+        on_chunk.call(chunk_struct.new("Qual servico?"))
         @on_tool_call.call(tool_call)
       end
 
@@ -40,7 +40,7 @@ RSpec.describe "Messages", type: :request do
       expect(response.body).to eq(
         "data: {\"chunk\":\"Qual servico?\"}\n\n" \
         "data: {\"tool\":\"ui--suggest_choices\"}\n\n" \
-        "data: {\"choices\":[\"Lavagem\",\"Polimento\"]}\n\n" \
+        "event: ui\ndata: {\"type\":\"choices\",\"options\":[\"Lavagem\",\"Polimento\"]}\n\n" \
         "data: {\"done\":true}\n\n"
       )
     end
