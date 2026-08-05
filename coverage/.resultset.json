@@ -363,7 +363,24 @@
           null,
           null,
           null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
           1,
+          null,
           null,
           null,
           null,
@@ -398,13 +415,13 @@
           null
         ],
         "branches": {
-          "[:unless, 0, 115, 4, 115, 59]": {
-            "[:else, 1, 115, 4, 115, 59]": 6,
-            "[:then, 2, 115, 4, 115, 10]": 1
+          "[:unless, 0, 132, 4, 132, 59]": {
+            "[:else, 1, 132, 4, 132, 59]": 6,
+            "[:then, 2, 132, 4, 132, 10]": 1
           },
-          "[:if, 3, 117, 4, 117, 52]": {
-            "[:then, 4, 117, 4, 117, 36]": 4,
-            "[:else, 5, 117, 4, 117, 52]": 2
+          "[:if, 3, 134, 4, 134, 52]": {
+            "[:then, 4, 134, 4, 134, 36]": 4,
+            "[:else, 5, 134, 4, 134, 52]": 2
           }
         }
       },
@@ -442,6 +459,47 @@
           "[:if, 0, 12, 4, 12, 64]": {
             "[:then, 1, 12, 4, 12, 43]": 1,
             "[:else, 2, 12, 4, 12, 64]": 1
+          }
+        }
+      },
+      "/rails/app/tools/scheduling/available_slots_tool.rb": {
+        "lines": [
+          1,
+          1,
+          null,
+          1,
+          1,
+          1,
+          null,
+          null,
+          null,
+          1,
+          4,
+          3,
+          3,
+          null,
+          2,
+          null,
+          1,
+          null,
+          null,
+          1,
+          null,
+          1,
+          2,
+          null,
+          2,
+          null,
+          null,
+          20,
+          null,
+          null,
+          null
+        ],
+        "branches": {
+          "[:unless, 0, 13, 4, 13, 106]": {
+            "[:else, 1, 13, 4, 13, 106]": 2,
+            "[:then, 2, 13, 4, 13, 91]": 1
           }
         }
       },
@@ -867,6 +925,73 @@
           }
         }
       },
+      "/rails/app/services/scheduling/available_slots.rb": {
+        "lines": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          null,
+          1,
+          13,
+          null,
+          null,
+          1,
+          13,
+          null,
+          11,
+          211,
+          null,
+          null,
+          1,
+          null,
+          1,
+          121,
+          null,
+          null,
+          1,
+          330,
+          null,
+          null,
+          1,
+          21,
+          null,
+          null,
+          1,
+          10,
+          10,
+          null,
+          null,
+          1,
+          200,
+          400,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          null,
+          1,
+          241,
+          531,
+          null,
+          null
+        ],
+        "branches": {
+          "[:if, 0, 18, 4, 18, 49]": {
+            "[:then, 1, 18, 4, 18, 13]": 2,
+            "[:else, 2, 18, 4, 18, 49]": 11
+          }
+        }
+      },
       "/rails/app/services/weather/mock.rb": {
         "lines": [
           null,
@@ -1028,7 +1153,7 @@
           1,
           null,
           4,
-          3,
+          14,
           1,
           null
         ],
@@ -1125,25 +1250,6 @@
         ],
         "branches": {}
       },
-      "/rails/app/controllers/chats_controller.rb": {
-        "lines": [
-          1,
-          1,
-          2,
-          null,
-          null,
-          1,
-          1,
-          null,
-          null,
-          1,
-          1,
-          1,
-          null,
-          null
-        ],
-        "branches": {}
-      },
       "/rails/app/controllers/messages_controller.rb": {
         "lines": [
           1,
@@ -1175,8 +1281,27 @@
           null
         ],
         "branches": {}
+      },
+      "/rails/app/controllers/chats_controller.rb": {
+        "lines": [
+          1,
+          1,
+          2,
+          null,
+          null,
+          1,
+          1,
+          null,
+          null,
+          1,
+          1,
+          1,
+          null,
+          null
+        ],
+        "branches": {}
       }
     },
-    "timestamp": 1785906622
+    "timestamp": 1785907681
   }
 }

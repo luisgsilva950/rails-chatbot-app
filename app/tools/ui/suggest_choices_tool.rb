@@ -10,7 +10,7 @@ class Ui::SuggestChoicesTool < RubyLLM::Tool
 
   params do
     array :options, of: :string,
-          description: "Between 2 and 5 short options in pt-BR (up to ~30 characters each), in the order they should be shown."
+          description: "Between 2 and 5 short options in English (up to ~40 characters each), in the order they should be shown. A label may carry a distinguishing detail the user needs in order to choose, e.g. a service name with its price, or \"Friday (Aug 8)\". Names that come from stored data keep their original spelling."
   end
 
   # `on_tool_call` fires before #execute, so Chat::ReplyStream normalizes the

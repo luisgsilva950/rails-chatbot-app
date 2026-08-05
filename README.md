@@ -156,8 +156,8 @@ Key rules (full details in [CLAUDE.md](CLAUDE.md)):
 - Controllers stay thin: create the message, hand the response stream
   to `Chat::ReplyStream`. No LLM logic inline.
 - Validations live on the model. Always.
-- User-facing strings are pt-BR via `t("...")` in
-  `config/locales/pt-BR.yml`.
+- User-facing strings are English via `t("...")` in
+  `config/locales/en.yml`.
 
 ---
 

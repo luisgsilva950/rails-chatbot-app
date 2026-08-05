@@ -336,7 +336,9 @@ html:has(.chat), body:has(.chat) { overflow: hidden; }
   font: inherit;
   font-size: 0.8125rem;
   line-height: 1.25;
+  max-width: 100%;
   padding: 0.3rem 0.6rem;
+  text-align: left;
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 }
 

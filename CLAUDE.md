@@ -12,8 +12,9 @@ dashboard, no agents-with-tools layer. **One thing, done well.**
 
 **Tone:** clear, direct, helpful. The chatbot is a tool, not a personality.
 
-**Language:** all user-facing strings in **pt-BR**. All code, schema,
-identifiers, and commit messages in English. No exceptions.
+**Language:** everything in **English** — user-facing strings, code,
+schema, identifiers, and commit messages. Names that come from stored
+data (e.g. the service catalog) keep their original spelling.
 
 ---
 
@@ -294,7 +295,7 @@ tool — stop. The product doesn't need it.
   and writes each one as an SSE event. The full message is saved once on
   completion — never persist partial content mid-stream.
 - Errors are caught, logged (without prompt body), and surfaced to the
-  UI as a friendly pt-BR string.
+  UI as a friendly English string.
 - API keys live in **encrypted credentials** or environment variables.
   Never in source.
 
@@ -321,8 +322,8 @@ end
 ### Language
 
 - **All schema, code, and identifiers in English.**
-- **All user-facing strings in pt-BR via `t('…')`.** Never hardcode user
-  strings.
+- **All user-facing strings in English via `t('…')`.** Never hardcode
+  user strings.
 
 ### Schema
 
@@ -496,7 +497,7 @@ fix.
 ## i18n
 
 - Every user-facing string goes through `t("...")` and lives in
-  `config/locales/pt-BR.yml`.
+  `config/locales/en.yml`.
 - Tone: clear, direct, helpful. No forced legalese, no slang.
 - Keep keys nested by feature: `conversations.created`, `messages.failed`.
 
@@ -539,7 +540,7 @@ bin/rails console
 - [ ] Validations on the model — not in POROs / controllers?
 - [ ] LLM called only through `Chat::Replier` (main chat, streamed by
       `Chat::ReplyStream`) or an `Agent` (sub-domain)?
-- [ ] Strings in `pt-BR.yml`, accessed via `t(...)`?
+- [ ] Strings in `en.yml`, accessed via `t(...)`?
 - [ ] Request / PORO specs cover happy path + failure?
 - [ ] **100% line + branch coverage on new/changed code** (`simplecov`)?
 - [ ] No mocks for Active Record? VCR for the LLM provider only?

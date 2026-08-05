@@ -7,6 +7,7 @@ require "rails_helper"
 RSpec.describe "Tool params schemas" do
   tool_classes = [
     Scheduling::ListServiceTypesTool,
+    Scheduling::AvailableSlotsTool,
     Scheduling::ListAppointmentsForDateTool,
     Scheduling::UpcomingAppointmentsTool,
     Inventory::LowStockProductsTool,

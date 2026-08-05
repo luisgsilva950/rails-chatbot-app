@@ -36,9 +36,9 @@ module RailsChatbotApp
     # Common ones are `templates`, `generators`, or `middleware`, for example.
     config.autoload_lib(ignore: %w[assets tasks])
 
-    # i18n: pt-BR for all user-facing strings.
-    config.i18n.default_locale = :"pt-BR"
-    config.i18n.available_locales = [ :"pt-BR" ]
+    # i18n: English for all user-facing strings.
+    config.i18n.default_locale = :en
+    config.i18n.available_locales = [ :en ]
 
     # Configuration for the application, engines, and railties goes here.
     #
