@@ -11,9 +11,9 @@ export default class extends Controller {
   static targets = [
     "messages", "form", "input", "submitButton",
     "userTemplate", "assistantTemplate", "typingTemplate", "thinkingTemplate",
-    "choicesTemplate"
+    "choices"
   ]
-  static values = { url: String }
+  static values = { url: String, otherLabel: String }
 
   connect() {
     if (this.hasSubmitButtonTarget && !this.submitButtonTarget.dataset.defaultLabel) {
@@ -118,28 +118,41 @@ export default class extends Controller {
     if (data.done)     this.#finalize()
   }
 
-  // Ready-made replies suggested by the model. Clicking one sends it as an
-  // ordinary user message, so the rest of the flow is unchanged.
+  // Ready-made replies suggested by the model, docked just above the input.
+  // Clicking one sends it as an ordinary user message, so the rest of the
+  // flow is unchanged; "other" just steps out of the way of the text box.
   #appendChoices(options) {
     this.#hideTyping()
     this.#removeChoices()
-    const node = this.choicesTemplateTarget.content.firstElementChild.cloneNode(true)
-    options.forEach((option) => node.appendChild(this.#choiceButton(option)))
-    this.messagesTarget.appendChild(node)
+    options.forEach((option) => this.choicesTarget.appendChild(this.#choiceButton(option)))
+    this.choicesTarget.appendChild(this.#otherButton())
+    this.choicesTarget.hidden = false
     this.#scrollToBottom()
   }
 
   #choiceButton(option) {
+    return this.#button("choice", option, () => this.#send(option))
+  }
+
+  #otherButton() {
+    return this.#button("choice choice--other", this.otherLabelValue, () => {
+      this.#removeChoices()
+      this.inputTarget.focus()
+    })
+  }
+
+  #button(className, label, onClick) {
     const button = document.createElement("button")
     button.type = "button"
-    button.className = "choice"
-    button.textContent = option
-    button.addEventListener("click", () => this.#send(option))
+    button.className = className
+    button.textContent = label
+    button.addEventListener("click", onClick)
     return button
   }
 
   #removeChoices() {
-    this.messagesTarget.querySelector(".choices")?.remove()
+    this.choicesTarget.replaceChildren()
+    this.choicesTarget.hidden = true
   }
 
   // Streams the model's thought summary into an open <details> block.
