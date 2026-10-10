@@ -29,11 +29,11 @@ RSpec.describe Ui::SuggestChoicesTool do
   end
 
   describe "#execute" do
-    it "halts the conversation so the model waits for the user's pick" do
+    it "returns a tool result acknowledging the choices" do
       result = tool.execute(options: [ "Lavagem simples", "Polimento" ])
 
-      expect(result).to be_a(RubyLLM::Tool::Halt)
-      expect(result.to_s).to include("2 options")
+      expect(result).to be_a(String)
+      expect(result).to include("2 options")
     end
 
     it "returns a recoverable error when there are not enough options" do

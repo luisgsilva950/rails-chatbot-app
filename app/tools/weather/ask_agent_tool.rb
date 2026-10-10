@@ -5,7 +5,7 @@
 class Weather::AskAgentTool < RubyLLM::Tool
   description "Asks the weather specialist. Use whenever the question involves weather, meteorological conditions, rain, or temperature — for past, present, or future dates, including when crossing weather with sales or appointments. Pass the full question in natural language; the specialist handles fetching data for the relevant day(s)."
 
-  params do
+  parameters do
     string :question, required: true,
            description: "Weather question, including the date(s) of interest (past or future)."
   end

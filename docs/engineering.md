@@ -285,8 +285,8 @@ tool — stop. The product doesn't need it.
 ## LLM Conventions (`ruby_llm`)
 
 - **The main chat goes through `Chat::Replier`**, which owns the model
-  choice, system instructions, and default tool list, and calls
-  `complete` on the persisted `Chat`. `acts_as_chat` is the ruby_llm
+  choice, system instructions, and default tool list, and advances the
+  persisted `Chat` with `step`, pausing after valid choices. `acts_as_chat` is the ruby_llm
   boundary — there is no separate `Llm::Client` wrapper.
 - **Invoked from the request through `Chat::ReplyStream`**, which writes
   the reply to the SSE response stream — never called directly from a

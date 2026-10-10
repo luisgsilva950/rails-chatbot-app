@@ -2,56 +2,101 @@ require "rails_helper"
 
 RSpec.describe Chat::Replier do
   let(:chat) { Chat.create! }
+  let(:choices_name) { Chat::ReplyStream::CHOICES_TOOL }
 
-  before do
-    allow(chat).to receive(:with_model).and_return(chat)
-    allow(chat).to receive(:with_instructions).and_return(chat)
-    allow(chat).to receive(:with_tools).and_return(chat)
-    allow(chat).to receive(:complete)
+  before { chat.messages.create!(role: "user", content: "Which service?") }
+
+  it "persists the provider reply and token usage with today's instructions" do
+    request = stub_gemini(gemini_response(text: "How can I help?"))
+      .with { |req| req.body.include?(Date.current.iso8601) }
+
+    described_class.new.call(chat)
+
+    expect(request).to have_been_requested.once
+    expect(chat.messages.last.content).to eq("How can I help?")
+    expect(chat.messages.last.tokens.input).to eq(10)
+    expect(chat.ruby_llm_usages.last.status).to eq("succeeded")
   end
 
-  describe "#call" do
-    it "configures the persisted chat and forwards the block to complete" do
-      chat.messages.create!(role: "user", content: "Como está o caixa de hoje?")
-      block = ->(chunk) { chunk }
+  it "streams chunks from the provider and supports a custom tool list" do
+    request = stub_gemini(gemini_response(text: "Hello"), stream: true)
+      .with { |req| !JSON.parse(req.body).key?("tools") }
+    chunks = []
 
-      described_class.new(model: "gemini-2.5-flash").call(chat, &block)
+    described_class.new(tools: []).call(chat) { |chunk| chunks << chunk.content }
 
-      expect(chat).to have_received(:with_model).with("gemini-2.5-flash")
-      expect(chat).to have_received(:with_instructions) do |text|
-        expect(text).to include(Date.current.iso8601)
-      end
-      expect(chat).to have_received(:with_tools).with(*described_class::DEFAULT_TOOLS)
-      expect(chat).to have_received(:complete) do |&captured|
-        expect(captured).to eq(block)
-      end
+    expect(request).to have_been_requested.once
+    expect(chunks).to include("Hello")
+    expect(chat.messages.last.content).to eq("Hello")
+  end
+
+  it "executes and persists valid choices, then pauses without another provider request" do
+    request = stub_gemini(gemini_response(text: "Which service?", calls: [ [ choices_name, { options: [ "Wash", "Polish" ] } ] ]))
+    calls = []
+
+    described_class.new.call(chat, on_tool_call: ->(call) { calls << call })
+
+    expect(request).to have_been_requested.once
+    expect(calls.map(&:name)).to eq([ choices_name ])
+    expect(chat.messages.last.role).to eq("tool")
+    expect(chat.messages.last.content).to include("2 options")
+    expect(chat.messages.last.ruby_llm_parent_tool_call.result).to eq(chat.messages.last)
+
+    chat.messages.create!(role: "user", content: "Wash")
+    stub_gemini(gemini_response(text: "Wash selected."))
+    described_class.new.call(chat)
+    expect(chat.messages.last.content).to eq("Wash selected.")
+    expect(chat.messages.where(role: "tool").count).to eq(1)
+  end
+
+  it "allows the model to recover from invalid choices" do
+    request = stub_gemini(
+      gemini_response(calls: [ [ choices_name, { options: [ "Wash", " " ] } ] ]),
+      gemini_response(text: "What would you like?")
+    )
+
+    described_class.new.call(chat)
+
+    expect(request).to have_been_requested.twice
+    expect(chat.messages.where(role: "tool").last.content).to include("at least 2")
+    expect(chat.messages.last.content).to eq("What would you like?")
+  end
+
+  it "executes ordinary domain tools and continues to the model's answer" do
+    name = CashFlow::DailyRevenueTool.new.name
+    request = stub_gemini(
+      gemini_response(calls: [ [ name, {} ] ]),
+      gemini_response(text: "No revenue today.")
+    )
+
+    described_class.new.call(chat)
+
+    expect(request).to have_been_requested.twice
+    expect(chat.messages.where(role: "tool").last.content).to include("total_brl")
+    expect(chat.messages.last.content).to eq("No revenue today.")
+  end
+
+  it "pauses when a custom tool requires approval" do
+    tool = Class.new(RubyLLM::Tool) do
+      def name = "approval_example"
+      requires_approval
+      def execute = "Approved"
     end
+    request = stub_gemini(gemini_response(calls: [ [ "approval_example", {} ] ]))
 
-    it "supports a custom tool list" do
-      chat.messages.create!(role: "user", content: "vendas?")
-      tool = Class.new(RubyLLM::Tool)
+    described_class.new(tools: [ tool ]).call(chat)
 
-      described_class.new(tools: [ tool ]).call(chat) { |_| }
+    expect(request).to have_been_requested.once
+    expect(chat.waiting?).to be(true)
+    expect(chat.messages.where(role: "tool")).to be_empty
+  end
 
-      expect(chat).to have_received(:with_tools).with(tool)
-    end
+  it "returns without calling a provider when there is no user message" do
+    chat.messages.delete_all
+    request = stub_gemini(gemini_response(text: "Unexpected"))
 
-    it "registers an on_tool_call callback when one is provided" do
-      chat.messages.create!(role: "user", content: "vendas?")
-      allow(chat).to receive(:on_tool_call)
-      callback = ->(_) { }
+    described_class.new.call(chat)
 
-      described_class.new.call(chat, on_tool_call: callback) { |_| }
-
-      expect(chat).to have_received(:on_tool_call) do |&block|
-        expect(block).to eq(callback)
-      end
-    end
-
-    it "returns without calling the LLM when there is no user message" do
-      described_class.new.call(chat)
-
-      expect(chat).not_to have_received(:complete)
-    end
+    expect(request).not_to have_been_requested
   end
 end

@@ -5,7 +5,7 @@
 class Inventory::AskAgentTool < RubyLLM::Tool
   description "Asks the inventory specialist. Use whenever the question involves stock, products, what was consumed/sold/used on a given day, low stock or ruptures — including when crossing inventory with sales or appointment dates. Pass the full question (with the date(s) of interest) in natural language; the specialist handles fetching and cross-referencing the relevant data."
 
-  params do
+  parameters do
     string :question, required: true,
            description: "Inventory question, including any date(s) of interest."
   end

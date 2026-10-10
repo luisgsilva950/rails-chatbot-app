@@ -25,7 +25,7 @@ One thing, done well.
 - **HTTP + SSE** (`ActionController::Live`) for the live token stream —
   no ActionCable, no background jobs
 - **Hotwire** (Turbo + Stimulus) via importmap
-- **`ruby_llm`** for the LLM
+- **`ruby_llm` 2.1** for the LLM
 - **RSpec** + FactoryBot + VCR
 - **Kamal 2** + Docker for deploy
 
@@ -41,6 +41,9 @@ Vite, no Tailwind.
 - Bundler
 
 ---
+
+Existing installations: read the [RubyLLM 2.1 migration guide](docs/ruby-llm-upgrade.md)
+before upgrading the database.
 
 ## Local setup
 

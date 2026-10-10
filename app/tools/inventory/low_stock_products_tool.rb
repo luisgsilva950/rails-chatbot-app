@@ -1,7 +1,7 @@
 class Inventory::LowStockProductsTool < RubyLLM::Tool
   description "Lists products whose current stock is at or below the configured minimum."
 
-  params do
+  parameters do
     string :category, required: false,
            enum: Product::CATEGORIES,
            description: "Filter by category (shampoo, wax, sealant, polish, interior, tool, consumable)."

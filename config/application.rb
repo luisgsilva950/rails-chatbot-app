@@ -18,14 +18,6 @@ require "rails/test_unit/railtie"
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-# ruby_llm: enable the new association-based acts_as API.
-# MUST be set here (before Rails::Application is defined) so the model
-# mixins see the flag when they are loaded. Setting it in an initializer
-# is too late.
-RubyLLM.configure do |config|
-  config.use_new_acts_as = true
-end
-
 module RailsChatbotApp
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.

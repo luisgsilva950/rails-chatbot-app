@@ -3,7 +3,7 @@ class Inventory::ProductsConsumedOnDatesTool < RubyLLM::Tool
 
   MAX_DATES = 31
 
-  params do
+  parameters do
     array :dates, of: :string,
           description: "Calendar dates (YYYY-MM-DD), max 31. Each date is treated as a full local-time day."
   end

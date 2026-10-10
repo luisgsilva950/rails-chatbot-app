@@ -1,7 +1,7 @@
 class CustomerLookup::FindCustomerByPhoneTool < RubyLLM::Tool
   description "Finds a customer by phone number and returns their registered vehicles."
 
-  params do
+  parameters do
     string :phone, description: "Customer phone. Partial input is accepted: digits are extracted before searching."
   end
 
