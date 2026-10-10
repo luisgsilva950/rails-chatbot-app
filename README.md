@@ -10,7 +10,8 @@ persisted, so you can come back and pick up where you left off.
 
 One thing, done well.
 
-> Coding agents start with [AGENTS.md](AGENTS.md). Shared conventions live in
+> All coding agents use [.github/copilot-instructions.md](.github/copilot-instructions.md),
+> our single instruction entry point in Copilot format. Shared conventions live in
 > [docs/engineering.md](docs/engineering.md); setup and validation are in
 > [docs/agent-workflow.md](docs/agent-workflow.md).
 

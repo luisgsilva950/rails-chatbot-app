@@ -521,8 +521,8 @@ the requested workflow needs them.
 ## Common commands
 
 See [the agent workflow](agent-workflow.md) for native and Docker setup,
-RSpec, and CI commands. Check [AGENTS.md](../AGENTS.md) first for the
-repository-wide working agreement.
+RSpec, and CI commands. Read [the repository instructions](../.github/copilot-instructions.md) first
+for the repository-wide working agreement.
 
 ---
 
