@@ -89,7 +89,7 @@ after them, so `Chat::ReplyStream` needs no buffering to get the order right.
 **What it costs**
 
 - The SSE protocol is now five event shapes, and it is a real contract between
-  `Chat::ReplyStream` and the Stimulus controller. It belongs in `CLAUDE.md`,
+  `Chat::ReplyStream` and the Stimulus controller. It belongs in `docs/engineering.md`,
   and it did not before.
 - Chip labels come from the model, so they are not translatable through
   `t(…)`; the system prompt is what keeps them in pt-BR.

@@ -10,7 +10,9 @@ persisted, so you can come back and pick up where you left off.
 
 One thing, done well.
 
-> Conventions, philosophy, and engineering rules live in [CLAUDE.md](CLAUDE.md).
+> Coding agents start with [AGENTS.md](AGENTS.md). Shared conventions live in
+> [docs/engineering.md](docs/engineering.md); setup and validation are in
+> [docs/agent-workflow.md](docs/agent-workflow.md).
 
 ---
 
@@ -148,7 +150,7 @@ app/
 └── views/           # ERB + Stimulus controllers under app/javascript/
 ```
 
-Key rules (full details in [CLAUDE.md](CLAUDE.md)):
+Key rules (full details in [docs/engineering.md](docs/engineering.md)):
 
 - Every LLM call goes through `Chat::Replier` (or a sub-agent like
   `WeatherAgent`), streamed to the client by `Chat::ReplyStream` as
