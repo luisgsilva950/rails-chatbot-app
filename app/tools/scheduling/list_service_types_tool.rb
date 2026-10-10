@@ -1,7 +1,7 @@
 class Scheduling::ListServiceTypesTool < RubyLLM::Tool
   description "Lists the services the shop actually offers, with duration and price. This is the authoritative catalog — call it before naming, listing, pricing, or confirming any service, and never invent or guess a service name."
 
-  params do
+  parameters do
     string :category, required: false,
            enum: ServiceType::CATEGORIES,
            description: "Filter by category (wash, detailing, protection, interior). Empty returns the whole catalog."

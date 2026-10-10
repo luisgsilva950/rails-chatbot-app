@@ -2,53 +2,43 @@ require "rails_helper"
 
 RSpec.describe "Messages", type: :request do
   let(:chat) { Chat.create! }
-  let(:chunk_struct) { Struct.new(:content) }
-
-  before do
-    allow(Chat).to receive(:find).with(chat.id.to_s).and_return(chat)
-    allow(chat).to receive_messages(
-      with_model: chat, with_instructions: chat, with_tools: chat
-    )
-  end
 
   describe "POST /chats/:chat_id/messages" do
-    it "creates the user message and streams the reply as Server-Sent Events" do
-      allow(chat).to receive(:complete)
-        .and_yield(chunk_struct.new(""))
-        .and_yield(chunk_struct.new("oi"))
+    it "creates the user message and streams and persists the provider reply" do
+      stub_gemini(gemini_response(text: "Hello"), stream: true)
 
       expect {
-        post chat_messages_path(chat), params: { message: { content: "Olá" } }
+        post chat_messages_path(chat), params: { message: { content: "Hi" } }
       }.to change(chat.messages.where(role: "user"), :count).by(1)
 
       expect(response).to have_http_status(:ok)
       expect(response.headers["Content-Type"]).to eq("text/event-stream")
-      expect(response.body).to eq("data: {\"chunk\":\"oi\"}\n\ndata: {\"done\":true}\n\n")
+      expect(response.body).to eq("data: {\"chunk\":\"Hello\"}\n\ndata: {\"done\":true}\n\n")
+      expect(chat.messages.last.content).to eq("Hello")
     end
 
-    it "streams the choices the model suggested so the UI can render them" do
-      tool_call = Struct.new(:name, :arguments)
-        .new(Chat::ReplyStream::CHOICES_TOOL, "options" => [ "Lavagem", "Polimento" ])
-      allow(chat).to receive(:on_tool_call) { |&callback| @on_tool_call = callback }
-      allow(chat).to receive(:complete) do |&on_chunk|
-        on_chunk.call(chunk_struct.new("Qual servico?"))
-        @on_tool_call.call(tool_call)
-      end
+    it "streams choices and persists their result without another provider request" do
+      request = stub_gemini(gemini_response(text: "Which service?", calls: [
+        [ Chat::ReplyStream::CHOICES_TOOL, { options: [ "Wash", "Polish" ] } ]
+      ]), stream: true)
 
-      post chat_messages_path(chat), params: { message: { content: "quero agendar" } }
+      post chat_messages_path(chat), params: { message: { content: "Book a service" } }
 
       expect(response.body).to eq(
-        "data: {\"chunk\":\"Qual servico?\"}\n\n" \
+        "data: {\"chunk\":\"Which service?\"}\n\n" \
         "data: {\"tool\":\"ui--suggest_choices\"}\n\n" \
-        "event: ui\ndata: {\"type\":\"choices\",\"options\":[\"Lavagem\",\"Polimento\"]}\n\n" \
+        "event: ui\ndata: {\"type\":\"choices\",\"options\":[\"Wash\",\"Polish\"]}\n\n" \
         "data: {\"done\":true}\n\n"
       )
+      expect(request).to have_been_requested.once
+      expect(chat.messages.last.role).to eq("tool")
+      expect(chat.messages.last.content).to include("2 options")
     end
 
-    it "still streams a done event when the LLM returned no chunks" do
-      allow(chat).to receive(:complete)
+    it "still streams a done event when the provider returned no text" do
+      stub_gemini(gemini_response, stream: true)
 
-      post chat_messages_path(chat), params: { message: { content: "Olá" } }
+      post chat_messages_path(chat), params: { message: { content: "Hi" } }
 
       expect(response.body).to eq("data: {\"done\":true}\n\n")
     end

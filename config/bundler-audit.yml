@@ -1,15 +1,2 @@
-# Audit all gems listed in the Gemfile for known security problems by running bin/bundler-audit.
-# CVEs that are not relevant to the application can be enumerated on the ignore list below.
-
-ignore:
-  # RubyLLM's three polynomial-time regexp advisories describe Ruby 3.1.x.
-  # This application pins Ruby 3.4.2 in .ruby-version and both Dockerfiles;
-  # CI uses that pin, and Rails 8.1 requires Ruby >= 3.2. Ruby >= 3.2 provides
-  # linear-time matching for the affected think-tag/name-conversion regexps
-  # (verified with Regexp.linear_time? on Ruby 3.4.2). The app also does not
-  # use the Mistral provider. Reassess these exceptions if the runtime or
-  # provider support changes; they do not apply to Ruby 3.1 deployments.
-  # Upstream applicability: https://github.com/rubysec/ruby-advisory-db/tree/master/gems/ruby_llm
-  - CVE-2026-67987 # think-tag parsing
-  - CVE-2026-67989 # Mistral capability matching
-  - CVE-2026-67991 # class/agent/tool name conversion
+# Audit all locked gems without RubyLLM 1.x advisory exceptions.
+ignore: []

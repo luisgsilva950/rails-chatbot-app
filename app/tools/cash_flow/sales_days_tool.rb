@@ -1,7 +1,7 @@
 class CashFlow::SalesDaysTool < RubyLLM::Tool
   description "Lists days with confirmed payments and the total received per day. Use when the user asks which days had sales, revenue, receipts, or cash movement."
 
-  params do
+  parameters do
     string :start_date, required: false,
            description: "Start date (YYYY-MM-DD). Defaults to 30 days ago."
     string :end_date, required: false,

@@ -57,12 +57,12 @@ RSpec.describe Llm::TimingMiddleware do
     end
   end
 
-  describe "RubyLLM::Connection integration" do
-    it "registers itself first when Connection#setup_middleware runs" do
+  describe "RubyLLM::Transport::Connection integration" do
+    it "registers itself first when Connection.setup_middleware runs" do
       faraday = Faraday.new(url: "https://example.test") { |f| f.adapter :test }
-      connection = RubyLLM::Connection.allocate
+      settings = RubyLLM::Transport::Connection::Settings.new(adapter: :test)
 
-      connection.send(:setup_middleware, faraday)
+      RubyLLM::Transport::Connection.send(:setup_middleware, faraday, settings)
 
       expect(faraday.builder.handlers.first).to eq(described_class)
     end

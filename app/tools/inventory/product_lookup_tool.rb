@@ -1,7 +1,7 @@
 class Inventory::ProductLookupTool < RubyLLM::Tool
   description "Searches inventory products by name or SKU. Partial, case-insensitive match."
 
-  params do
+  parameters do
     string :query, description: "Search term: part of the product name or SKU."
   end
 

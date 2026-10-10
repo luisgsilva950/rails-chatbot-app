@@ -128,18 +128,30 @@ class Chat::Replier
     @model = model
   end
 
+  # The caller controls RubyLLM 2.1's loop because Tool#halt was removed.
+  # Execute and persist the choices result before pausing; invalid choices
+  # remain recoverable and ordinary domain tools continue to a model reply.
   def call(chat, on_tool_call: nil, &on_chunk)
     return unless chat.messages.where(role: "user").exists?
 
-    chat.on_tool_call(&on_tool_call) if on_tool_call
-    chat
-      .with_model(@model)
-      .with_instructions(instructions)
-      .with_tools(*@tools)
-      .complete(&on_chunk)
+    choices_presented = false
+    chat.before_tool_call do |tool_call|
+      on_tool_call&.call(tool_call)
+      choices_presented ||= choices?(tool_call)
+    end
+    chat.with_model(@model).with_instructions(instructions).with_tools(*@tools)
+    loop do
+      chat.step(&on_chunk)
+      break if chat.complete? || chat.waiting? || choices_presented
+    end
   end
 
   private
+
+  def choices?(tool_call)
+    tool_call.name == Chat::ReplyStream::CHOICES_TOOL &&
+      Ui::SuggestChoicesTool.normalize(tool_call.arguments.with_indifferent_access[:options]).present?
+  end
 
   def instructions
     format(SYSTEM_INSTRUCTIONS_TEMPLATE, today: Date.current.iso8601)

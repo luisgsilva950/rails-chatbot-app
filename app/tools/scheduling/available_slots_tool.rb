@@ -1,7 +1,7 @@
 class Scheduling::AvailableSlotsTool < RubyLLM::Tool
   description "Returns the start times still free for one service on one date — the actual answer to \"what times do you have?\". The shop handles several cars at once, so a time is free while it still has a free hand for the whole duration of that service. An empty list means genuinely nothing free that day; the shop is closed on Sundays. This reports availability only — it does not book anything."
 
-  params do
+  parameters do
     string :date, description: "Date in YYYY-MM-DD format."
     integer :service_type_id,
             description: "Id of the service, as returned by scheduling--list_service_types. Call that tool first if you do not have it."

@@ -1,7 +1,7 @@
 class CashFlow::DailyRevenueTool < RubyLLM::Tool
   description "Cash-flow summary for a single day: total received and breakdown by payment method."
 
-  params do
+  parameters do
     string :date, required: false,
            description: "Date in YYYY-MM-DD format. Defaults to today."
   end

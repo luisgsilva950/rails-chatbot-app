@@ -133,3 +133,11 @@ on the default event, plus `event: ui` for widgets.
 - **Multi-select, or labels separate from values.** No second consumer yet.
 - **An `error` SSE event and rate limiting.** Both are real gaps in the app.
   Neither is this change.
+
+## Update — 2026-10-10: RubyLLM 2.1 caller-controlled pause
+
+RubyLLM 2.1 removes `Tool#halt`. The choices tool returns an ordinary result;
+`Chat::Replier` advances with `step` and stops after valid choices have executed
+and their result has persisted. Invalid choices remain recoverable, and other
+tools continue to a model answer. The SSE protocol and browser behavior are
+unchanged. The next user message resumes with the saved tool result in history.

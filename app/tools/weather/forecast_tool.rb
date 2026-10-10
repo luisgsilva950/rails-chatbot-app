@@ -1,7 +1,7 @@
 class Weather::ForecastTool < RubyLLM::Tool
   description "Looks up (mocked) weather data for a date or range, including past, present, and future dates. Returns condition, temperature, and precipitation per day. Also use for historical questions, e.g. 'how was the weather over the last 30 days?'."
 
-  params do
+  parameters do
     string :start_date, required: true,
            description: "Start date in YYYY-MM-DD format. May be a past date."
     string :end_date, required: false,
