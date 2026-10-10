@@ -1,0 +1,8 @@
+---
+description: Shared repository instructions for coding agents
+alwaysApply: true
+---
+
+Read and follow `AGENTS.md` at the repository root. Before implementation,
+read `docs/engineering.md`; for setup and validation, read
+`docs/agent-workflow.md`. Keep shared guidance in those files, not here.
