@@ -54,7 +54,7 @@ group :development, :test do
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
 
-  # RSpec is the only test framework on this project (CLAUDE.md).
+  # RSpec is the only test framework on this project (docs/engineering.md).
   gem "rspec-rails"
   gem "factory_bot_rails"
 end

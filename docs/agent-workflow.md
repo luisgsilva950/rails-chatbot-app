@@ -1,25 +1,23 @@
 # Coding-agent workflow
 
-Start with [AGENTS.md](../AGENTS.md) and
+Start with [repository instructions](../.github/copilot-instructions.md) and
 [engineering conventions](engineering.md). These documents describe work on
 the repository; the chatbot's runtime prompts remain in `app/services/chat/`
 and `app/agents/`.
 
-## Instruction entry points
+## Single instruction entry point
 
-| Harness | Entry point | Shared guidance |
-| --- | --- | --- |
-| Codex and agents supporting AGENTS.md | `AGENTS.md` | Read directly |
-| Claude Code | `CLAUDE.md` | Imports `AGENTS.md` with `@AGENTS.md` |
-| GitHub Copilot | `.github/copilot-instructions.md` | Requests reading the shared documents |
-| Cursor | `.cursor/rules/project.mdc` | Always-applied rule requests reading the shared documents |
-| Other agents | Explicitly provide `AGENTS.md` | Read the linked documents before implementation |
+`.github/copilot-instructions.md` is the repository's generic coding-agent
+harness. It uses the Copilot Markdown instruction format, with ordinary project
+rules that apply to any agent, editor, or model. Detailed conventions and setup
+commands live in the linked documents.
 
-Instruction discovery varies by harness and version. When starting a session,
-check that the agent has read the shared documents; a Markdown link alone
-does not guarantee automatic loading. Add future harness adapters as pointers
-without copying the project rules. Update shared guidance when commands or
-architecture change.
+Use this same file with every agent. Tools that support this format can load
+it directly; otherwise explicitly include it in the session context and ask
+the agent to read the linked documents. Do not assume a Markdown link loads
+another file automatically. There are no vendor-specific wrappers or separate
+copies of the instructions. Update this file and the shared documents when
+commands or architecture change.
 
 ## Inspect before editing
 
