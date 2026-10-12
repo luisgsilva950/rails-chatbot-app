@@ -137,7 +137,7 @@ openai_api_key: ...
 ## Agent evaluations
 
 [`ruby_llm-agent-evaluations`](https://rubygems.org/gems/ruby_llm-agent-evaluations)
-(pinned to [0.2.2](https://rubygems.org/gems/ruby_llm-agent-evaluations/versions/0.2.2))
+(pinned to [0.3.0](https://rubygems.org/gems/ruby_llm-agent-evaluations/versions/0.3.0))
 records opt-in quality runs in the application PostgreSQL database. Ordinary
 chat requests do not run evaluations.
 
@@ -161,8 +161,11 @@ credentials for their providers. Automated specs mock provider HTTP only.
 `EvaluationJudgeAgent` enforces a structured response with a numeric `score`
 between 0 and 1 and a nonempty `reason`. Prompt-only JSON instructions can
 produce Markdown fences that the evaluation parser rejects; the schema requests
-JSON at the provider level. Version 0.2.2 preserves existing PostgreSQL history
-and copied migrations; upgrading does not require resetting the database.
+JSON at the provider level. Version 0.3.0 adds structured response-component
+evaluation without new migrations or runtime dependencies. Existing PostgreSQL
+history and copied migrations remain unchanged; no database reset is required.
+The gem can score captured A2UI payloads through custom validators, but this
+application's current suite still evaluates text and tool traces, not UI events.
 
 Cases live in `Evaluations::ChatSuite`: daily revenue accuracy and exact tool
 arguments, booking clarification for both service and preferred day without
