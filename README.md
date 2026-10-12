@@ -182,11 +182,13 @@ The booking case requires `a2ui_choices: 1.0` independently of the answer
 judges. `Evaluations::A2uiChoicesCheck` validates v0.9.1 envelope order, catalog
 and surface IDs, unique component IDs, linked Row/Button/Text choices, the
 expected service categories, and matching `select_choice` action context.
-Missing or incorrect UI fails even if the text scores perfectly.
+Missing or incorrect UI fails even if the text scores perfectly. The check
+returns a boolean; the gem converts it to a score of 0 or 1 and supplies its
+own diagnostics for missing components or a protocol-version mismatch.
 
-Raw component evidence and the UI score/reason are retained in the dashboard
-and exports. Suite version 2 starts a new baseline for this expanded contract;
-bump it when changing validation logic. This checks the literal choices
+Raw component evidence and the UI score are retained in the dashboard and
+exports. Suite version 2 covers this choices contract; bump it when changing
+the contract, not for an equivalent refactor. This checks the literal choices
 profile, not the entire A2UI catalog or actual browser clicks. Browser checks
 remain necessary for rendering and interaction. Rollback cannot undo external
 HTTP side effects; use non-sensitive local business data and read-only tools.

@@ -51,7 +51,6 @@ RSpec.describe Evaluations::ChatSuite do
     expect(metric.passed).to be(false)
     missing_ui = run.case_results.find_by!(case_id: "booking-clarification").metric_results.find_by!(name: "a2ui_choices")
     expect(missing_ui.score).to eq(0.0)
-    expect(missing_ui.reason).to eq("No a2ui response components")
   end
 
   it "fails incorrect UI choices even when both answer judges approve" do
@@ -71,7 +70,6 @@ RSpec.describe Evaluations::ChatSuite do
     expect(booking.metric_results.where(name: %w[semantic_accuracy answer_relevancy]).pluck(:score)).to eq([ 1.0, 1.0 ])
     ui_metric = booking.metric_results.find_by!(name: "a2ui_choices")
     expect(ui_metric.score).to eq(0.0)
-    expect(ui_metric.reason).to include("Wrong choice label")
     expect(booking.components.last.fetch("payload").fetch("updateComponents").fetch("components"))
       .to include(include("text" => "Polish"))
   end
