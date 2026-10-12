@@ -125,7 +125,7 @@ openai_api_key: ...
 
 ## Agent evaluations
 
-[`ruby_llm-agent-evaluations` 0.2.0](https://rubygems.org/gems/ruby_llm-agent-evaluations/versions/0.2.0)
+[`ruby_llm-agent-evaluations` 0.2.1](https://rubygems.org/gems/ruby_llm-agent-evaluations/versions/0.2.1)
 records opt-in quality runs in the application PostgreSQL database. Ordinary
 chat requests do not run evaluations.
 
@@ -134,6 +134,12 @@ bundle install
 bin/rails db:migrate
 bin/rails evaluations:run
 ```
+
+Fresh setup uses one migration creating only the three evaluation tables, with
+`minimum_scores` directly. Legacy payload imports, helper models, and the
+separate column-rename migration are no longer needed. If you already applied
+both migrations from this branch with 0.2.0, the resulting tables are unchanged;
+do not reset the database or rerun the creation migration.
 
 Use a development or test database; the command refuses production. Real runs
 require the normal provider credentials and incur model charges. The candidate
