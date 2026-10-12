@@ -10,14 +10,17 @@ module GeminiResponses
     }
   end
 
-  def stub_gemini(*responses, stream: false)
+  def stub_gemini(*responses, stream: nil)
     stub_request(:post, %r{https://generativelanguage.googleapis.com/.*models/gemini-3-flash-preview:})
       .to_return(*responses.map { |response|
-        {
-          status: 200,
-          headers: { "Content-Type" => stream ? "text/event-stream" : "application/json" },
-          body: stream ? "data: #{response.to_json}\n\n" : response.to_json
-        }
+        lambda do |request|
+          streaming = stream.nil? ? request.uri.path.end_with?(":streamGenerateContent") : stream
+          {
+            status: 200,
+            headers: { "Content-Type" => streaming ? "text/event-stream" : "application/json" },
+            body: streaming ? "data: #{response.to_json}\n\n" : response.to_json
+          }
+        end
       })
   end
 end

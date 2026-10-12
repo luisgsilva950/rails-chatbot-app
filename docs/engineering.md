@@ -283,7 +283,8 @@ tool — stop. The product doesn't need it.
 - **The main chat goes through `Chat::Replier`**, which delegates to `ChatAgent`
   on the existing persisted `Chat`. `ChatAgent` owns model configuration,
   instructions, tools, and the `step` loop, pausing after valid choices.
-  Evaluations invoke that same agent through `Evaluations::ChatAdapter`.
+  Evaluations invoke that same path through `Evaluations::ChatAdapter`,
+  capturing actual `Chat::ReplyStream` SSE output for response-component checks.
   `acts_as_chat` remains the persistence boundary, not a separate client layer.
 - **Invoked from the request through `Chat::ReplyStream`**, which writes
   the reply to the SSE response stream — never called directly from a

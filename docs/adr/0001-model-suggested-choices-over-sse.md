@@ -172,6 +172,18 @@ ephemeral surface; reloading does not restore unanswered choices.
 
 Request specs cover event ordering, component references, labels, action
 context, selection persistence, and malformed-action rejection. Live browser
-verification also covers rendering and the click round trip. The evaluation
-adapter still captures agent tool calls, not emitted A2UI messages; its quality
-score must not be interpreted as protocol or browser validation.
+verification also covers rendering and the click round trip.
+
+With ruby_llm-agent-evaluations 0.3.0, `Evaluations::ChatAdapter` now executes
+the real `Chat::ReplyStream` into an in-memory SSE sink in its rollback-only
+transaction. It records the actual A2UI envelopes as `Response.components`,
+without inventing UI evidence or tool provenance. `ChatSuite` uses the gem
+response-component evaluator and `Evaluations::A2uiChoicesCheck`; booking
+clarification must score 1.0 for category choices as well as pass its separate
+text rubrics. The check verifies envelope order/version, matching surface and
+catalog, component uniqueness/references, literal category labels, and selection
+action context. Missing or malformed UI fails independently of correct text.
+Suite version 2 isolates this expanded contract from earlier baselines. The
+dashboard retains the payloads, UI score, and reason using existing tables.
+This is choices-profile evaluation, not whole-catalog certification or proof
+that a browser rendered the controls; browser interaction checks still apply.
