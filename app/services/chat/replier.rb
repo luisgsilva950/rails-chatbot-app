@@ -123,9 +123,10 @@ class Chat::Replier
     Ui::SuggestChoicesTool
   ].freeze
 
-  def initialize(tools: DEFAULT_TOOLS, model: RubyLLM.config.default_model)
+  def initialize(tools: DEFAULT_TOOLS, model: RubyLLM.config.default_model, context_window: Chat::ContextWindow.new)
     @tools = tools
     @model = model
+    @context_window = context_window
   end
 
   # The caller controls RubyLLM 2.1's loop because Tool#halt was removed.
@@ -141,6 +142,7 @@ class Chat::Replier
     end
     chat.with_model(@model).with_instructions(instructions).with_tools(*@tools)
     loop do
+      @context_window.call(chat)
       chat.step(&on_chunk)
       break if chat.complete? || chat.waiting? || choices_presented
     end

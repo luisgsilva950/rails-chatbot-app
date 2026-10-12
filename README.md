@@ -121,6 +121,11 @@ gemini_api_key: ...
 openai_api_key: ...
 ```
 
+Long conversations use durable summaries for model context without deleting
+stored messages. Large tool results are reduced before the next model request.
+See [context-window protection](docs/ruby-llm-upgrade.md#context-window-protection)
+for migration requirements, budgeting, cost, limitations, and verification.
+
 ---
 
 ## Common commands
