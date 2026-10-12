@@ -15,8 +15,8 @@ over HTTP Server-Sent Events (SSE); there are no background jobs or Redis.
 
 - `app/controllers/`: request handling; keep controllers thin.
 - `app/models/`: persisted chats, messages, and business data; validations here.
-- `app/services/chat/`: main LLM orchestration and SSE transport.
-- `app/agents/`: focused inventory and weather agents.
+- `app/services/chat/`: request-facing reply entry point and SSE transport.
+- `app/agents/`: main chat, inventory, weather, and evaluation judge agents.
 - `app/tools/`: scheduling, cash-flow, customer, inventory, weather, and UI tools.
 - `app/javascript/controllers/chat_controller.js`: streaming UI client.
 - `config/locales/en.yml`: user-facing strings.
@@ -38,8 +38,9 @@ over HTTP Server-Sent Events (SSE); there are no background jobs or Redis.
 
 ## Contracts to preserve
 
-- Main chat calls go through `Chat::Replier` and `Chat::ReplyStream`; domain
-  agents own their focused provider calls. Never put LLM logic in controllers.
+- Main chat calls go through `Chat::Replier` and `Chat::ReplyStream`; `ChatAgent`
+  owns the main prompt, tools, and reply loop on the persisted conversation.
+  Domain agents own their focused provider calls. Never put LLM logic in controllers.
 - SSE events and the Stimulus client form a shared contract. Changes must
   cover both sides, stream completion, and closure on errors. See
   [the choices ADR](../docs/adr/0001-model-suggested-choices-over-sse.md).

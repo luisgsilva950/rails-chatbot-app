@@ -20,7 +20,7 @@ class Ui::SuggestChoicesTool < RubyLLM::Tool
     list.size < MIN_OPTIONS ? [] : list.first(MAX_OPTIONS)
   end
 
-  # Returns a regular tool result; Chat::Replier pauses after executing valid
+  # Returns a regular tool result; ChatAgent pauses after executing valid
   # choices, so the next move is the user's.
   def execute(options:)
     list = self.class.normalize(options)

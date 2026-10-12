@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Chat::Replier do
+RSpec.describe ChatAgent do
   let(:chat) { Chat.create! }
   let(:choices_name) { Chat::ReplyStream::CHOICES_TOOL }
 

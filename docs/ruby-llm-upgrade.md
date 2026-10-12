@@ -49,7 +49,7 @@ and the previous application version together, rather than `db:rollback`.
 ## Behavior changes
 
 Tools use `parameters`, and provider timing hooks the 2.1 transport connection.
-RubyLLM removed `Tool#halt`, so `Chat::Replier` controls the `step` loop. Valid
+RubyLLM removed `Tool#halt`, so `ChatAgent` controls the `step` loop. Valid
 choices execute and persist their result, then pause without another model
 request. Invalid choices return an error the model can recover from. Ordinary
 tools continue to a model answer; tools needing approval pause safely. The

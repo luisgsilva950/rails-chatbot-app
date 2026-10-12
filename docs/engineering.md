@@ -141,17 +141,12 @@ them.
 
 ```ruby
 class Chat::Replier
-  def initialize(tools: DEFAULT_TOOLS, model: RubyLLM.config.default_model)
-    @tools = tools
-    @model = model
+  def initialize(agent: ChatAgent.new)
+    @agent = agent
   end
 
-  def call(chat, &on_chunk)
-    chat
-      .with_model(@model)
-      .with_instructions(SYSTEM_INSTRUCTIONS)
-      .with_tools(*@tools)
-      .complete(&on_chunk)
+  def call(chat, on_tool_call: nil, &on_chunk)
+    @agent.call(chat, on_tool_call: on_tool_call, &on_chunk)
   end
 end
 ```
@@ -284,10 +279,11 @@ tool — stop. The product doesn't need it.
 
 ## LLM Conventions (`ruby_llm`)
 
-- **The main chat goes through `Chat::Replier`**, which owns the model
-  choice, system instructions, and default tool list, and advances the
-  persisted `Chat` with `step`, pausing after valid choices. `acts_as_chat` is the ruby_llm
-  boundary — there is no separate `Llm::Client` wrapper.
+- **The main chat goes through `Chat::Replier`**, which delegates to `ChatAgent`
+  on the existing persisted `Chat`. `ChatAgent` owns model configuration,
+  instructions, tools, and the `step` loop, pausing after valid choices.
+  Evaluations invoke that same agent through `Evaluations::ChatAdapter`.
+  `acts_as_chat` remains the persistence boundary, not a separate client layer.
 - **Invoked from the request through `Chat::ReplyStream`**, which writes
   the reply to the SSE response stream — never called directly from a
   controller action body.
@@ -458,8 +454,8 @@ the requested workflow needs them.
 1. **Request specs** — primary layer. Happy path (including the SSE
    body) + validation failure + rate-limit / auth where applicable.
 2. **Model specs** — validations, scopes, instance methods.
-3. **PORO specs** — `Chat::ReplyStream`, `Chat::Replier` (with VCR for
-   the LLM call).
+3. **Agent and PORO specs** — `ChatAgent`, domain agents, and `Chat::ReplyStream`,
+   with provider HTTP mocked and real PostgreSQL persistence.
 4. **System specs** — Capybara for one golden path: send a message, see
    the streamed reply appear.
 
@@ -533,8 +529,8 @@ for the repository-wide working agreement.
 - [ ] Controllers thin (≤ 5 lines per action, one ivar to the view)?
 - [ ] Business logic in POROs, not controllers?
 - [ ] Validations on the model — not in POROs / controllers?
-- [ ] LLM called only through `Chat::Replier` (main chat, streamed by
-      `Chat::ReplyStream`) or an `Agent` (sub-domain)?
+- [ ] Runtime LLM calls go through `Chat::Replier` / `ChatAgent` (main chat,
+      streamed by `Chat::ReplyStream`) or a domain agent; evaluations use agents directly?
 - [ ] Strings in `en.yml`, accessed via `t(...)`?
 - [ ] Request / PORO specs cover happy path + failure?
 - [ ] **100% line + branch coverage on new/changed code** (`simplecov`)?

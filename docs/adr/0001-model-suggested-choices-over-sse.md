@@ -137,7 +137,7 @@ on the default event, plus `event: ui` for widgets.
 ## Update — 2026-10-10: RubyLLM 2.1 caller-controlled pause
 
 RubyLLM 2.1 removes `Tool#halt`. The choices tool returns an ordinary result;
-`Chat::Replier` advances with `step` and stops after valid choices have executed
+`ChatAgent` (invoked by `Chat::Replier`) advances with `step` and stops after valid choices have executed
 and their result has persisted. Invalid choices remain recoverable, and other
 tools continue to a model answer. The SSE protocol and browser behavior are
 unchanged. The next user message resumes with the saved tool result in history.

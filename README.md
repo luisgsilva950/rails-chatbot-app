@@ -151,7 +151,7 @@ Cases live in `Evaluations::ChatSuite`: daily revenue accuracy and exact tool
 arguments, booking clarification without claiming a booking, and credential
 disclosure refusal without tool calls. Semantic accuracy and answer relevancy
 must each reach 0.9; declared ordered action traces must match exactly.
-`Evaluations::ChatAgent` invokes the real `Chat::Replier` in a rollback-only
+`Evaluations::ChatAdapter` invokes the real `ChatAgent` in a rollback-only
 transaction, preserving existing chats and business records. Its structured
 output includes assistant text and tool calls so a choices-only reply remains
 visible to the judge. Rollback cannot undo external HTTP side effects; use
@@ -206,9 +206,10 @@ app/
 
 Key rules (full details in [docs/engineering.md](docs/engineering.md)):
 
-- Every LLM call goes through `Chat::Replier` (or a sub-agent like
-  `WeatherAgent`), streamed to the client by `Chat::ReplyStream` as
-  Server-Sent Events.
+- Main chat requests go through `Chat::Replier`, which delegates to `ChatAgent`
+  on the persisted conversation. `ChatAgent` owns instructions, tools, and the
+  reply loop; `Chat::ReplyStream` delivers Server-Sent Events. Domain agents
+  such as `InventoryAgent` and `WeatherAgent` own their focused provider calls.
 - Controllers stay thin: create the message, hand the response stream
   to `Chat::ReplyStream`. No LLM logic inline.
 - Validations live on the model. Always.

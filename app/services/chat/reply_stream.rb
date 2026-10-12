@@ -31,7 +31,7 @@ class Chat::ReplyStream
     @replier.call(chat, on_tool_call: on_tool_call) { |chunk| write_chunk(sse, chunk) }
   end
 
-  # Chat::Replier pauses after valid choices, so nothing streams after them and
+  # ChatAgent pauses after valid choices, so nothing streams after them and
   # the chips always land at the bottom of the log.
   def write_tool_call(sse, tool_call)
     sse.write(tool: tool_call.name)

@@ -1,5 +1,5 @@
 namespace :evaluations do
-  desc "Evaluate Chat::Replier, persist evidence, and fail on unmet thresholds or regressions"
+  desc "Evaluate ChatAgent, persist evidence, and fail on unmet thresholds or regressions"
   task run: :environment do
     abort "Evaluations must run against a development or test database." if Rails.env.production?
     run = Rails.logger.silence do
