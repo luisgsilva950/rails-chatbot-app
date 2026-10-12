@@ -2,8 +2,8 @@ class Evaluations::ChatSuite
   def self.call
     date = Date.current.iso8601
     revenue = CashFlow::DailyRevenueTool.new.execute(date: date)
-    RubyLLM::Evaluations.define("Chat quality", agent: Evaluations::ChatAgent.new,
-      agent_name: "Chat::Replier", judge: EvaluationJudgeAgent) do
+    RubyLLM::Evaluations.define("Chat quality", agent: Evaluations::ChatAdapter.new,
+      agent_name: "ChatAgent", judge: EvaluationJudgeAgent) do
       question "What was the total revenue on #{date}? Use the daily revenue tool with that exact date.",
         id: "daily-revenue", expected_answer: "The total revenue on #{date} was BRL #{revenue.fetch(:total_brl)}.",
         minimum_scores: { semantic_accuracy: 0.9, answer_relevancy: 0.9, action_group: 1.0 },

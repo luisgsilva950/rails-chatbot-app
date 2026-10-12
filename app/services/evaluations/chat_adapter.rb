@@ -1,4 +1,4 @@
-class Evaluations::ChatAgent
+class Evaluations::ChatAdapter
   def initialize(model: RubyLLM.config.default_model)
     @model = model
   end
@@ -10,7 +10,7 @@ class Evaluations::ChatAgent
       chat = Chat.create!
       chat.messages.create!(role: "user", content: question)
       actions = []
-      Chat::Replier.new(model: @model).call(chat, on_tool_call: ->(call) { actions << action(call) })
+      ChatAgent.new(model: @model).call(chat, on_tool_call: ->(call) { actions << action(call) })
       response = build_response(chat, actions)
       raise ActiveRecord::Rollback
     end
