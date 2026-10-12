@@ -79,7 +79,7 @@ port. Inspect server logs for startup errors.
 
 Live chat creation and provider replies require `GEMINI_API_KEY` or
 `OPENAI_API_KEY` in the environment or encrypted Rails credentials.
-`RUBY_LLM_DEFAULT_MODEL` defaults to `gemini-2.5-flash`; when using OpenAI,
+`RUBY_LLM_DEFAULT_MODEL` defaults to `gemini-3-flash-preview`; when using OpenAI,
 select a model for that provider. `bin/start` checks for an environment key
 before starting Postgres and Rails. A homepage without a key does not prove
 that chat creation or streamed replies work. Supply secrets through the

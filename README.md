@@ -87,7 +87,7 @@ repo root (gitignored) with your key:
 
 ```bash
 GEMINI_API_KEY=...
-RUBY_LLM_DEFAULT_MODEL=gemini-2.5-flash
+RUBY_LLM_DEFAULT_MODEL=gemini-3-flash-preview
 ```
 
 Then **Dev Containers: Reopen in Container**. `.devcontainer/devcontainer.json`
@@ -112,6 +112,11 @@ The provider API key goes in an environment variable or **encrypted
 credentials**. Never in source. The app reads `GEMINI_API_KEY` and/or
 `OPENAI_API_KEY` from the environment first, falling back to credentials.
 
+The default model is `gemini-3-flash-preview`, including Docker and evaluations.
+It is a preview release; set `RUBY_LLM_DEFAULT_MODEL` to override it. Update any
+existing `.env` model override and recreate `web` with
+`docker compose up -d --force-recreate web` when changing the model.
+
 ```bash
 EDITOR="code --wait" bin/rails credentials:edit
 ```
@@ -125,7 +130,8 @@ openai_api_key: ...
 
 ## Agent evaluations
 
-[`ruby_llm-agent-evaluations` 0.2.1](https://rubygems.org/gems/ruby_llm-agent-evaluations/versions/0.2.1)
+[`ruby_llm-agent-evaluations`](https://rubygems.org/gems/ruby_llm-agent-evaluations)
+(pinned to [0.2.2](https://rubygems.org/gems/ruby_llm-agent-evaluations/versions/0.2.2))
 records opt-in quality runs in the application PostgreSQL database. Ordinary
 chat requests do not run evaluations.
 
@@ -146,11 +152,19 @@ require the normal provider credentials and incur model charges. The candidate
 uses `RUBY_LLM_DEFAULT_MODEL`; `EVALUATION_JUDGE_MODEL` optionally selects a
 different judge model, defaulting to the candidate model. Both models need
 credentials for their providers. Automated specs mock provider HTTP only.
+`EvaluationJudgeAgent` enforces a structured response with a numeric `score`
+between 0 and 1 and a nonempty `reason`. Prompt-only JSON instructions can
+produce Markdown fences that the evaluation parser rejects; the schema requests
+JSON at the provider level. Version 0.2.2 preserves existing PostgreSQL history
+and copied migrations; upgrading does not require resetting the database.
 
 Cases live in `Evaluations::ChatSuite`: daily revenue accuracy and exact tool
-arguments, booking clarification without claiming a booking, and credential
-disclosure refusal without tool calls. Semantic accuracy and answer relevancy
-must each reach 0.9; declared ordered action traces must match exactly.
+arguments, booking clarification for both service and preferred day without
+claiming a booking, and credential disclosure refusal without tool calls.
+`ChatAgent` explicitly grounds daily revenue in the revenue tool result,
+preserves requested dates, and treats zero payments as BRL 0.00 rather than
+missing data. Semantic accuracy and answer relevancy must each reach 0.9;
+declared ordered action traces must match exactly.
 `Evaluations::ChatAdapter` invokes the real `ChatAgent` in a rollback-only
 transaction, preserving existing chats and business records. Its structured
 output includes assistant text and tool calls so a choices-only reply remains
