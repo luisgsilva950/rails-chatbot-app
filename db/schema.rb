@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_10_000004) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_12_062007) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -187,6 +187,66 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_000004) do
     t.index ["status"], name: "index_ruby_llm_batches_on_status"
   end
 
+  create_table "ruby_llm_evaluations_case_results", force: :cascade do |t|
+    t.jsonb "actions"
+    t.string "case_id", null: false
+    t.float "cost"
+    t.datetime "created_at", null: false
+    t.float "duration_ms", null: false
+    t.jsonb "error_details"
+    t.jsonb "expected_actions"
+    t.jsonb "expected_answer"
+    t.bigint "input_tokens"
+    t.jsonb "metadata", default: {}, null: false
+    t.jsonb "minimum_scores", default: {}, null: false
+    t.text "name", null: false
+    t.jsonb "output"
+    t.bigint "output_tokens"
+    t.integer "position", null: false
+    t.jsonb "question"
+    t.jsonb "response_metadata"
+    t.string "run_id", null: false
+    t.string "status", null: false
+    t.datetime "updated_at", null: false
+    t.index ["run_id", "case_id"], name: "rle_case_identity", unique: true
+    t.index ["run_id", "position"], name: "rle_case_order", unique: true
+    t.index ["run_id"], name: "index_ruby_llm_evaluations_case_results_on_run_id"
+  end
+
+  create_table "ruby_llm_evaluations_metric_results", force: :cascade do |t|
+    t.bigint "case_result_id", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "error_details"
+    t.string "name", null: false
+    t.boolean "passed", null: false
+    t.integer "position", null: false
+    t.text "reason"
+    t.float "score"
+    t.float "threshold", null: false
+    t.datetime "updated_at", null: false
+    t.index ["case_result_id", "name"], name: "rle_metric_identity", unique: true
+    t.index ["case_result_id", "position"], name: "rle_metric_order", unique: true
+    t.index ["case_result_id"], name: "index_ruby_llm_evaluations_metric_results_on_case_result_id"
+  end
+
+  create_table "ruby_llm_evaluations_runs", id: :string, force: :cascade do |t|
+    t.string "agent", null: false
+    t.datetime "created_at", null: false
+    t.timestamptz "finished_at", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.bigserial "sequence", null: false
+    t.timestamptz "started_at", null: false
+    t.string "status", null: false
+    t.string "suite", null: false
+    t.string "suite_digest", null: false
+    t.jsonb "summary", null: false
+    t.datetime "updated_at", null: false
+    t.string "version", default: "1", null: false
+    t.index ["sequence"], name: "index_ruby_llm_evaluations_runs_on_sequence", unique: true
+    t.index ["started_at", "sequence"], name: "rle_runs_recent", order: :desc
+    t.index ["suite", "agent", "suite_digest", "started_at", "sequence"], name: "rle_runs_comparable", order: { started_at: :desc, sequence: :desc }
+  end
+
   create_table "ruby_llm_mcp_credentials", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "data"
@@ -282,8 +342,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_000004) do
     t.index ["message_type", "message_id"], name: "index_ruby_llm_usages_on_message_type_and_message_id"
     t.index ["owner_type", "owner_id"], name: "index_ruby_llm_usages_on_owner"
     t.index ["status"], name: "index_ruby_llm_usages_on_status"
-    t.check_constraint "operation::text = ANY (ARRAY['chat'::character varying, 'embedding'::character varying, 'moderation'::character varying, 'image'::character varying, 'speech'::character varying, 'transcription'::character varying, 'ocr'::character varying, 'rerank'::character varying, 'judgment'::character varying, 'video'::character varying, 'research'::character varying]::text[])"
-    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'succeeded'::character varying, 'failed'::character varying, 'cancelled'::character varying]::text[])"
+    t.check_constraint "operation::text = ANY (ARRAY['chat'::character varying, 'embedding'::character varying, 'moderation'::character varying, 'image'::character varying, 'speech'::character varying, 'transcription'::character varying, 'ocr'::character varying, 'rerank'::character varying, 'judgment'::character varying, 'video'::character varying, 'research'::character varying])"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'succeeded'::character varying, 'failed'::character varying, 'cancelled'::character varying])"
   end
 
   create_table "ruby_llm_v2_backfills", id: false, force: :cascade do |t|
@@ -348,6 +408,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_10_000004) do
   add_foreign_key "messages", "ruby_llm_models", column: "model_id"
   add_foreign_key "messages", "ruby_llm_tool_calls", column: "tool_call_id"
   add_foreign_key "payments", "appointments"
+  add_foreign_key "ruby_llm_evaluations_case_results", "ruby_llm_evaluations_runs", column: "run_id"
+  add_foreign_key "ruby_llm_evaluations_metric_results", "ruby_llm_evaluations_case_results", column: "case_result_id"
   add_foreign_key "stock_movements", "products"
   add_foreign_key "vehicles", "customers"
 end
