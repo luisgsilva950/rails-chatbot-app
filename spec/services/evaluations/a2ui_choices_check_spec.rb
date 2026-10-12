@@ -17,19 +17,17 @@ RSpec.describe Evaluations::A2uiChoicesCheck do
     ]
   end
 
-  def assessment(payloads)
+  def check(payloads)
     components = payloads.map { |payload| { protocol: "a2ui", version: "v0.9.1", payload: payload } }
     response = RubyLLM::Evaluations::Response.new(output: "Which service and date?", components: components)
-    question = RubyLLM::Evaluations::Question.new(metadata: { expected_options: %w[Wash Detailing] })
-    context = RubyLLM::Evaluations::Context.new(question, response)
-    check = RubyLLM::Evaluations::Evaluators.response_components(
-      protocol: "a2ui", version: "v0.9.1", &described_class.method(:call)
+    context = RubyLLM::Evaluations::Context.new(
+      RubyLLM::Evaluations::Question.new(metadata: { expected_options: %w[Wash Detailing] }), response
     )
-    check.call(response.output, context)
+    described_class.call(response.components, context)
   end
 
   it "accepts linked category buttons with literal labels and correct selection actions" do
-    expect(assessment(messages).score).to eq(1.0)
+    expect(check(messages)).to be(true)
   end
 
   it "fails missing, reordered, wrong-version, and mismatched surface messages" do
@@ -43,7 +41,7 @@ RSpec.describe Evaluations::A2uiChoicesCheck do
     changed = messages.deep_dup
     changed.last.fetch("updateComponents")["surfaceId"] = "other-surface"
     invalid << changed
-    invalid.each { |payload| expect(assessment(payload).score).to eq(0.0) }
+    invalid.each { |payload| expect(check(payload)).to be(false) }
   end
 
   it "fails invalid trees, dangling references, duplicate IDs, extra widgets, and misleading actions" do
@@ -65,8 +63,8 @@ RSpec.describe Evaluations::A2uiChoicesCheck do
     mutations.each do |mutation|
       changed = messages.deep_dup
       mutation.call(changed.last.fetch("updateComponents").fetch("components"))
-      expect(assessment(changed).score).to eq(0.0)
+      expect(check(changed)).to be(false)
     end
-    expect(assessment([ nil, messages.last ]).score).to eq(0.0)
+    expect(check([ nil, messages.last ])).to be(false)
   end
 end

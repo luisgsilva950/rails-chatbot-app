@@ -183,7 +183,9 @@ clarification must score 1.0 for category choices as well as pass its separate
 text rubrics. The check verifies envelope order/version, matching surface and
 catalog, component uniqueness/references, literal category labels, and selection
 action context. Missing or malformed UI fails independently of correct text.
+The app check returns a boolean, leaving score conversion and missing/version
+diagnostics to the gem rather than maintaining per-invariant exceptions.
 Suite version 2 isolates this expanded contract from earlier baselines. The
-dashboard retains the payloads, UI score, and reason using existing tables.
+dashboard retains the payloads and UI scores using existing tables.
 This is choices-profile evaluation, not whole-catalog certification or proof
 that a browser rendered the controls; browser interaction checks still apply.
