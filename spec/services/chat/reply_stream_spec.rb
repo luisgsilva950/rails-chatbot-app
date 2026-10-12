@@ -34,22 +34,6 @@ RSpec.describe Chat::ReplyStream do
     expect(io.string).to eq("data: {\"tool\":\"cash_flow--sales_days\"}\n\ndata: {\"done\":true}\n\n")
   end
 
-  it "writes a choices event with the options the model suggested" do
-    allow(replier).to receive(:call) do |_chat, on_tool_call:, &on_chunk|
-      on_chunk.call(chunk_struct.new("Qual serviço?"))
-      on_tool_call.call(tool_call(described_class::CHOICES_TOOL, "options" => [ "Lavagem", " Polimento " ]))
-    end
-
-    reply_stream.call(chat, io)
-
-    expect(io.string).to eq(
-      "data: {\"chunk\":\"Qual serviço?\"}\n\n" \
-      "data: {\"tool\":\"#{described_class::CHOICES_TOOL}\"}\n\n" \
-      "event: ui\ndata: {\"type\":\"choices\",\"options\":[\"Lavagem\",\"Polimento\"]}\n\n" \
-      "data: {\"done\":true}\n\n"
-    )
-  end
-
   it "skips the choices event when the suggested options do not survive normalization" do
     allow(replier).to receive(:call) do |_chat, on_tool_call:, &_on_chunk|
       on_tool_call.call(tool_call(described_class::CHOICES_TOOL, "options" => [ "Lavagem", "" ]))

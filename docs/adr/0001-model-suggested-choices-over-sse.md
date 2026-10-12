@@ -141,3 +141,37 @@ RubyLLM 2.1 removes `Tool#halt`. The choices tool returns an ordinary result;
 and their result has persisted. Invalid choices remain recoverable, and other
 tools continue to a model answer. The SSE protocol and browser behavior are
 unchanged. The next user message resumes with the saved tool result in history.
+
+## Update — 2026-10-12: A2UI v0.9.1 choices profile
+
+This supersedes the custom `event: ui` payload described above. Choices now
+use [A2UI v0.9.1](https://a2ui.org/specification/v0.9.1-a2ui/) on the existing
+HTTP SSE response; each `event: a2ui` contains one protocol envelope.
+`Ui::A2uiChoices` emits `createSurface` with a unique surface ID and the basic
+catalog ID, followed by `updateComponents` containing a `root` Row, Button
+components, and literal Text labels. Button actions use
+`action.event.name: "select_choice"` and `context.content` for the chosen reply.
+Literal content needs no `updateDataModel` message. Plain `chunk`, `tool`, and
+`done` events and the caller-controlled pause remain unchanged.
+
+`lib/a2ui_choices.js` implements this restricted choices profile, not the full
+basic catalog. It handles surface creation, component updates, and deletion;
+only static Row/Button/Text components and literal selection actions are
+supported. It does not fetch catalogs, interpret HTML, evaluate functions, or
+support dynamic bindings. Unsupported messages fail rather than pretending to
+render. The application fixes the protocol/catalog contract on both sides.
+
+A click posts a v0.9.1 `action` envelope in the `a2ui` form field to the same
+message endpoint, with name, surfaceId, sourceComponentId, ISO timestamp, and
+context. Rails accepts only `select_choice`, validates the required fields,
+and persists the selected content as an ordinary user message. Selection
+context is untrusted input, never permission to execute a tool or mutate
+business data. The existing CSRF token and session handling are preserved.
+Typed replies still use `message[content]`. Sending either removes the old
+ephemeral surface; reloading does not restore unanswered choices.
+
+Request specs cover event ordering, component references, labels, action
+context, selection persistence, and malformed-action rejection. Live browser
+verification also covers rendering and the click round trip. The evaluation
+adapter still captures agent tool calls, not emitted A2UI messages; its quality
+score must not be interpreted as protocol or browser validation.

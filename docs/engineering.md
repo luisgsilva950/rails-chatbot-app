@@ -231,13 +231,14 @@ When logic outgrows the model or controller, extract a PORO under
   `message` event): `{"chunk": "..."}`, `{"tool": "..."}`,
   `{"done": true}`. This list is a contract with `chat_controller.js` —
   adding a shape means touching both sides.
-- Interactive widgets stream on a separate named SSE event,
-  `event: ui`, discriminated by a `type` field in the payload — e.g.
-  `event: ui` / `data: {"type": "choices", "options": ["..."]}`. A new
-  widget adds a new `type`, not a new event name. `choices` carries
-  ready-made replies the model suggested by calling
-  `Ui::SuggestChoicesTool`; the browser renders them as clickable chips
-  and a pick comes back as an ordinary user message. See
+- Choice widgets use A2UI v0.9.1 envelopes on `event: a2ui`: a
+  `createSurface` followed by `updateComponents` with basic-catalog
+  Row/Button/Text components. `Ui::SuggestChoicesTool` still accepts
+  normalized options; `Ui::A2uiChoices` owns their protocol representation.
+  The browser supports this literal choices profile, not the whole catalog.
+  A click posts an A2UI `action` in the `a2ui` form field to the same endpoint;
+  Rails validates it and persists `context.content` as the user reply.
+  Typed messages remain unchanged. See
   `docs/adr/0001-model-suggested-choices-over-sse.md`.
 - The controller only creates the user message, sets the SSE headers
   (`Content-Type: text/event-stream`, `Cache-Control: no-cache`,
