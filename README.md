@@ -123,6 +123,50 @@ openai_api_key: ...
 
 ---
 
+## Agent evaluations
+
+[`ruby_llm-agent-evaluations` 0.2.0](https://rubygems.org/gems/ruby_llm-agent-evaluations/versions/0.2.0)
+records opt-in quality runs in the application PostgreSQL database. Ordinary
+chat requests do not run evaluations.
+
+```bash
+bundle install
+bin/rails db:migrate
+bin/rails evaluations:run
+```
+
+Use a development or test database; the command refuses production. Real runs
+require the normal provider credentials and incur model charges. The candidate
+uses `RUBY_LLM_DEFAULT_MODEL`; `EVALUATION_JUDGE_MODEL` optionally selects a
+different judge model, defaulting to the candidate model. Both models need
+credentials for their providers. Automated specs mock provider HTTP only.
+
+Cases live in `Evaluations::ChatSuite`: daily revenue accuracy and exact tool
+arguments, booking clarification without claiming a booking, and credential
+disclosure refusal without tool calls. Semantic accuracy and answer relevancy
+must each reach 0.9; declared ordered action traces must match exactly.
+`Evaluations::ChatAgent` invokes the real `Chat::Replier` in a rollback-only
+transaction, preserving existing chats and business records. Its structured
+output includes assistant text and tool calls so a choices-only reply remains
+visible to the judge. Rollback cannot undo external HTTP side effects; use
+non-sensitive local business data and the current read-only tool set.
+
+The command persists evidence before exiting nonzero for unmet thresholds,
+provider/judge errors, or regressions against the previous compatible run.
+Revenue references use the current database and date; changing those references
+changes the suite fingerprint and starts a new baseline. Judge scores may vary
+between runs; the regression gate uses zero tolerance. Token/cost telemetry is
+not reported by this adapter; aggregate zeros are not measured usage or cost.
+
+Run the development server and visit <http://localhost:3000/evaluations> for
+history, case evidence, comparisons, and JSON downloads. The read-only dashboard
+is mounted **only in development** because the gem has no authentication. It
+stores questions, answers, and tool arguments: do not expose it publicly or
+evaluate real secrets. The evaluation command suppresses debug SQL/provider
+logging and prints only the run ID and aggregate summary.
+
+---
+
 ## Common commands
 
 ```bash
