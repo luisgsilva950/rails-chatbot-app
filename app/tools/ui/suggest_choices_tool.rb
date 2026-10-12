@@ -1,7 +1,7 @@
 # Lets the model offer the user a short list of ready-made replies instead of
-# asking for free text. Chat::ReplyStream turns the call into a `choices` SSE
-# event and the browser renders clickable chips; the pick comes back as an
-# ordinary user message.
+# asking for free text. Chat::ReplyStream emits an A2UI choices surface;
+# the browser renders clickable chips and sends an A2UI selection action.
+# Rails persists the selection as an ordinary user message.
 class Ui::SuggestChoicesTool < RubyLLM::Tool
   description "Offers the user a short list of ready-made replies, rendered as clickable buttons in the chat. Use it when the next step depends on picking from a small, known set — a service, a date, a yes/no confirmation — instead of open text. Ask the question in your own message text; the buttons are drawn by the interface, so never list the options in the text as well."
 

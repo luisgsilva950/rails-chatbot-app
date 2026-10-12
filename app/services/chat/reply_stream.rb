@@ -6,11 +6,8 @@ class Chat::ReplyStream
   # the two together so a rename cannot silently break the choices event.
   CHOICES_TOOL = "ui--suggest_choices".freeze
 
-  # SSE event name for interactive widgets, as opposed to the default
-  # "message" event used for chunk/tool/done. Payloads are discriminated
-  # by a `type` field, so future widgets add a new `type` instead of a
-  # new event name.
-  UI_EVENT = "ui".freeze
+  # Each named SSE event carries one A2UI v0.9.1 envelope.
+  A2UI_EVENT = "a2ui".freeze
 
   def initialize(replier: Chat::Replier.new)
     @replier = replier
@@ -44,7 +41,9 @@ class Chat::ReplyStream
     normalized = Ui::SuggestChoicesTool.normalize(options)
     return if normalized.empty?
 
-    sse.write({ type: "choices", options: normalized }, event: UI_EVENT)
+    Ui::A2uiChoices.messages(normalized, surface_id: SecureRandom.uuid).each do |message|
+      sse.write(message, event: A2UI_EVENT)
+    end
   end
 
   def write_chunk(sse, chunk)

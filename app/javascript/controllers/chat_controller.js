@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { setMarkdown } from "lib/markdown"
+import { A2uiChoices } from "lib/a2ui_choices"
 
 // Streams assistant chunks for a single chat into the message log.
 //
@@ -20,6 +21,8 @@ export default class extends Controller {
       this.submitButtonTarget.dataset.defaultLabel = this.submitButtonTarget.textContent.trim()
     }
     this.inputTarget.dataset.defaultPlaceholder ||= this.inputTarget.placeholder
+    this.a2ui = new A2uiChoices(this.choicesTarget, (action) => this.#send(action.action.context.content, action))
+    this.#removeChoices()
     this.#renderExistingMarkdown()
     this.#scrollToBottom()
   }
@@ -40,8 +43,8 @@ export default class extends Controller {
     await this.#send(this.inputTarget.value.trim())
   }
 
-  async #send(content) {
-    if (!content) return
+  async #send(content, action = null) {
+    if (!content || this.inputTarget.disabled) return
 
     this.#removeChoices()
     this.#removeEmptyState()
@@ -50,7 +53,7 @@ export default class extends Controller {
     this.#setSending(true)
 
     try {
-      const response = await this.#postMessage(content)
+      const response = await this.#postMessage(content, action)
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
       this.inputTarget.value = ""
       await this.#consumeStream(response.body)
@@ -68,9 +71,12 @@ export default class extends Controller {
     return this.hasFormTarget ? this.formTarget : this.element.querySelector("form")
   }
 
-  #postMessage(content) {
+  #postMessage(content, action) {
     const formData = new FormData(this.formElement())
-    formData.set("message[content]", content)
+    if (action) {
+      formData.delete("message[content]")
+      formData.set("a2ui", JSON.stringify(action))
+    } else formData.set("message[content]", content)
     this.abortController = new AbortController()
     return fetch(this.urlValue, {
       method: "POST",
@@ -111,8 +117,8 @@ export default class extends Controller {
       .map((line) => line.slice(5).trim())
       .join("\n")
     if (!data) return
-    if (event === "ui") this.#onUi(JSON.parse(data))
-    else this.#onMessage(JSON.parse(data))
+    if (event === "a2ui") this.#onA2ui(JSON.parse(data))
+    else if (event === "message") this.#onMessage(JSON.parse(data))
   }
 
   #onMessage(data) {
@@ -121,37 +127,16 @@ export default class extends Controller {
     if (data.done)  this.#finalize()
   }
 
-  // Interactive widgets the model requested, distinct from the plain
-  // message stream. Each `type` is a different widget; today only
-  // "choices" exists.
-  #onUi(data) {
-    if (data.type === "choices") this.#appendChoices(data.options)
-  }
-
-  // Ready-made replies suggested by the model, docked just above the input.
-  // Clicking one sends it as an ordinary user message. There is no "other"
-  // button: the text box already is that option, so while the suggestions
-  // are up it says so in its placeholder.
-  #appendChoices(options) {
-    this.#hideTyping()
-    this.#removeChoices()
-    options.forEach((option) => this.choicesTarget.appendChild(this.#choiceButton(option)))
-    this.choicesTarget.hidden = false
-    this.inputTarget.placeholder = this.otherPlaceholderValue
+  #onA2ui(data) {
+    const visible = this.a2ui.receive(data)
+    this.choicesTarget.hidden = !visible
+    this.inputTarget.placeholder = visible ? this.otherPlaceholderValue : this.inputTarget.dataset.defaultPlaceholder
+    if (visible) this.#hideTyping()
     this.#scrollToBottom()
   }
 
-  #choiceButton(option) {
-    const button = document.createElement("button")
-    button.type = "button"
-    button.className = "choice"
-    button.textContent = option
-    button.addEventListener("click", () => this.#send(option))
-    return button
-  }
-
   #removeChoices() {
-    this.choicesTarget.replaceChildren()
+    this.a2ui.clear()
     this.choicesTarget.hidden = true
     this.inputTarget.placeholder = this.inputTarget.dataset.defaultPlaceholder
   }

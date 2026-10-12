@@ -32,6 +32,12 @@ One thing, done well.
 The UI is deliberately small: ERB + Stimulus + plain CSS. No React, no
 Vite, no Tailwind.
 
+Suggested replies use [A2UI v0.9.1](https://a2ui.org/specification/v0.9.1-a2ui/)
+over SSE: surface creation and basic-catalog Row/Button/Text components, then
+an A2UI selection action back to Rails. The renderer supports this literal
+choices profile only, not arbitrary A2UI widgets or dynamic bindings. See the
+[choices protocol decision](docs/adr/0001-model-suggested-choices-over-sse.md).
+
 ---
 
 ## Prerequisites
