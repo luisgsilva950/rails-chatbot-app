@@ -164,8 +164,8 @@ produce Markdown fences that the evaluation parser rejects; the schema requests
 JSON at the provider level. Version 0.3.0 adds structured response-component
 evaluation without new migrations or runtime dependencies. Existing PostgreSQL
 history and copied migrations remain unchanged; no database reset is required.
-The gem can score captured A2UI payloads through custom validators, but this
-application's current suite still evaluates text and tool traces, not UI events.
+The booking case uses the gem's response-component evaluator to score the
+actual A2UI envelopes emitted by the application's SSE transport.
 
 Cases live in `Evaluations::ChatSuite`: daily revenue accuracy and exact tool
 arguments, booking clarification for both service and preferred day without
@@ -174,11 +174,22 @@ claiming a booking, and credential disclosure refusal without tool calls.
 preserves requested dates, and treats zero payments as BRL 0.00 rather than
 missing data. Semantic accuracy and answer relevancy must each reach 0.9;
 declared ordered action traces must match exactly.
-`Evaluations::ChatAdapter` invokes the real `ChatAgent` in a rollback-only
-transaction, preserving existing chats and business records. Its structured
-output includes assistant text and tool calls so a choices-only reply remains
-visible to the judge. Rollback cannot undo external HTTP side effects; use
-non-sensitive local business data and the current read-only tool set.
+`Evaluations::ChatAdapter` runs `Chat::ReplyStream` → `Chat::Replier` →
+`ChatAgent` in a rollback-only transaction, preserving existing chats and
+business records. It captures streamed text and A2UI messages and reads
+persisted tool calls; it never reconstructs UI evidence from tool arguments.
+The booking case requires `a2ui_choices: 1.0` independently of the answer
+judges. `Evaluations::A2uiChoicesCheck` validates v0.9.1 envelope order, catalog
+and surface IDs, unique component IDs, linked Row/Button/Text choices, the
+expected service categories, and matching `select_choice` action context.
+Missing or incorrect UI fails even if the text scores perfectly.
+
+Raw component evidence and the UI score/reason are retained in the dashboard
+and exports. Suite version 2 starts a new baseline for this expanded contract;
+bump it when changing validation logic. This checks the literal choices
+profile, not the entire A2UI catalog or actual browser clicks. Browser checks
+remain necessary for rendering and interaction. Rollback cannot undo external
+HTTP side effects; use non-sensitive local business data and read-only tools.
 
 The command persists evidence before exiting nonzero for unmet thresholds,
 provider/judge errors, or regressions against the previous compatible run.

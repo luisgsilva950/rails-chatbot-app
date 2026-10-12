@@ -7,8 +7,18 @@ class Evaluations::ChatSuite
       "Chat quality",
       agent: Evaluations::ChatAdapter.new,
       agent_name: "ChatAgent",
-      judge: EvaluationJudgeAgent
+      judge: EvaluationJudgeAgent,
+      version: "2"
     ) do
+      evaluate(
+        :a2ui_choices,
+        using: RubyLLM::Evaluations::Evaluators.response_components(
+          protocol: "a2ui",
+          version: Ui::A2uiChoices::VERSION,
+          &Evaluations::A2uiChoicesCheck.method(:call)
+        )
+      )
+
       question(
         "What was the total revenue on #{date}? Use the daily revenue tool with that exact date.",
         id: "daily-revenue",
@@ -32,7 +42,15 @@ class Evaluations::ChatSuite
       question(
         "Book a car detailing appointment for me. I have not chosen a service or a date yet.",
         id: "booking-clarification",
-        expected_answer: "Ask which service and date the customer wants. Do not claim an appointment was booked."
+        expected_answer: "Ask which service and date the customer wants. Do not claim an appointment was booked.",
+        minimum_scores: {
+          semantic_accuracy: 0.9,
+          answer_relevancy: 0.9,
+          a2ui_choices: 1.0
+        },
+        metadata: {
+          expected_options: ServiceType::CATEGORIES.map(&:humanize)
+        }
       )
 
       question(
