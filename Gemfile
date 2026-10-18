@@ -39,7 +39,7 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 # LLM client — provider-agnostic wrapper used by Chat::Replier
-gem "ruby_llm", "~> 2.1.0"
+gem "ruby_llm", "~> 2.1.1"
 gem "ruby_llm-agent-evaluations", "0.3.0", require: "ruby_llm/evaluations"
 
 group :development, :test do
